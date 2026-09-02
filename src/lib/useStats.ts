@@ -23,8 +23,7 @@ export function useStats(): UseStats {
       .then((s) => alive && setState({ stats: s, loading: false }))
       .catch(
         (err) =>
-          alive &&
-          setState((p) => ({ ...p, loading: false, error: (err as Error).message })),
+          alive && setState((p) => ({ ...p, loading: false, error: (err as Error).message })),
       );
     return () => {
       alive = false;

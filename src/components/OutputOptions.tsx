@@ -76,7 +76,11 @@ export function OutputOptions() {
             type="checkbox"
             checked={wmEnabled}
             disabled={audioOnly}
-            onChange={(e) => setWatermark(e.target.checked ? { position: "bottom-right", opacity: 0.85 } : undefined)}
+            onChange={(e) =>
+              setWatermark(
+                e.target.checked ? { position: "bottom-right", opacity: 0.85 } : undefined,
+              )
+            }
           />
           Marca d’água {audioOnly && <span className="hint">(não se aplica a MP3)</span>}
         </label>

@@ -457,8 +457,7 @@ export const useStore = create<State>()(
 
         setWatermark: (watermark) => editActive((p) => ({ ...p, watermark })),
 
-        addCut: () =>
-          editCuts("add", (p) => ({ ...p, cuts: [...p.cuts, emptyCut(p.duration)] })),
+        addCut: () => editCuts("add", (p) => ({ ...p, cuts: [...p.cuts, emptyCut(p.duration)] })),
 
         addCutFromSeconds: (startSec, endSec) =>
           editCuts("mark", (p) => ({
@@ -577,9 +576,7 @@ export const useStore = create<State>()(
 
         addMontageItem: (item) =>
           editActiveMontage((m) =>
-            m.items.some((it) => it.key === item.key)
-              ? m
-              : { ...m, items: [...m.items, item] },
+            m.items.some((it) => it.key === item.key) ? m : { ...m, items: [...m.items, item] },
           ),
 
         removeMontageItem: (key) =>

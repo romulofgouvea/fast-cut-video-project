@@ -6,7 +6,7 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import prettier from "eslint-config-prettier/flat";
 
 export default tseslint.config(
-  { ignores: ["dist/", "data/", "bin/", "node_modules/", "test-upload.mjs"] },
+  { ignores: ["dist/", "data/", "bin/", "node_modules/", "src-tauri/"] },
 
   js.configs.recommended,
   ...tseslint.configs.recommended,
@@ -40,9 +40,9 @@ export default tseslint.config(
     languageOptions: { globals: globals.node },
   },
 
-  // Playwright specs also run browser-context callbacks.
+  // Playwright specs + screenshot scripts also run browser-context callbacks.
   {
-    files: ["e2e/**/*.spec.ts"],
+    files: ["e2e/**/*.spec.ts", "scripts/shots.mjs"],
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
 

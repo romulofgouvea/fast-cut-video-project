@@ -13,7 +13,8 @@ type Badge = { text: string; tone: "idle" | "running" | "done" | "error" };
 
 const statusBadge = (m: MontageProject): Badge => {
   const c = m.compilation;
-  if (c.phase === "processing") return { text: `Gerando ${Math.round(c.percent)}%`, tone: "running" };
+  if (c.phase === "processing")
+    return { text: `Gerando ${Math.round(c.percent)}%`, tone: "running" };
   if (c.phase === "done") return { text: "Pronta", tone: "done" };
   if (c.phase === "failed") {
     return { text: c.error === "expirada" ? "Expirada" : "Falhou", tone: "error" };
@@ -33,11 +34,7 @@ export function MontageGallery() {
       {montageProjects.length === 0 ? (
         <div className="gallery__empty">
           <p>Nenhuma montagem salva. Crie uma para juntar cortes num vídeo só.</p>
-          <button
-            type="button"
-            className="btn btn--primary"
-            onClick={() => createMontageProject()}
-          >
+          <button type="button" className="btn btn--primary" onClick={() => createMontageProject()}>
             Nova montagem
           </button>
         </div>

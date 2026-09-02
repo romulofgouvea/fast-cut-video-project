@@ -19,11 +19,7 @@ export function VideoInfoCard() {
         ) : infoStatus === "error" ? (
           <p className="hint hint--warn">
             Não consegui obter título/duração ({infoError}).{" "}
-            <button
-              type="button"
-              className="btn btn--ghost"
-              onClick={() => void loadVideoInfo(id)}
-            >
+            <button type="button" className="btn btn--ghost" onClick={() => void loadVideoInfo(id)}>
               Tentar de novo
             </button>
           </p>

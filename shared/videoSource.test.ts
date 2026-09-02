@@ -73,7 +73,9 @@ describe("detectSource", () => {
     );
     expect(s.provider).toBe("facebook");
     expect(s.embedUrl).toContain("plugins/video.php");
-    expect(s.embedUrl).toContain(encodeURIComponent("https://www.facebook.com/watch/?v=835321340249928"));
+    expect(s.embedUrl).toContain(
+      encodeURIComponent("https://www.facebook.com/watch/?v=835321340249928"),
+    );
   });
 
   it("Instagram: blockquote permalink → /embed/", () => {
@@ -114,7 +116,9 @@ describe("detectSource", () => {
   });
 
   it("Telegram: data-telegram-post → t.me embed", () => {
-    const s = detectSource('<script src="https://telegram.org/js/telegram-widget.js?4" data-telegram-post="telegram/249" data-width="100%"></script>');
+    const s = detectSource(
+      '<script src="https://telegram.org/js/telegram-widget.js?4" data-telegram-post="telegram/249" data-width="100%"></script>',
+    );
     expect(s.provider).toBe("telegram");
     expect(s.embedUrl).toBe("https://t.me/telegram/249?embed=1&dark=1");
   });
@@ -132,7 +136,9 @@ describe("detectSource", () => {
 
   it("Giphy: iframe embed src", () => {
     expect(
-      detectSource('<iframe src="https://giphy.com/embed/R6gvnAxj2ISzJdbA63" allowfullscreen></iframe>').embedUrl,
+      detectSource(
+        '<iframe src="https://giphy.com/embed/R6gvnAxj2ISzJdbA63" allowfullscreen></iframe>',
+      ).embedUrl,
     ).toBe("https://giphy.com/embed/R6gvnAxj2ISzJdbA63");
   });
 
@@ -208,9 +214,9 @@ describe("extractSourceUrl", () => {
     expect(
       extractSourceUrl('  <iframe src="https://rumble.com/embed/v7clzws/?pub=4"></iframe> '),
     ).toBe("https://rumble.com/embed/v7clzws/?pub=4");
-    expect(
-      extractSourceUrl('<div data-href="https://www.facebook.com/watch/?v=42"></div>'),
-    ).toBe("https://www.facebook.com/watch/?v=42");
+    expect(extractSourceUrl('<div data-href="https://www.facebook.com/watch/?v=42"></div>')).toBe(
+      "https://www.facebook.com/watch/?v=42",
+    );
     expect(extractSourceUrl("  https://vimeo.com/123  ")).toBe("https://vimeo.com/123");
     expect(extractSourceUrl("<not-a-known-snippet>")).toBe("<not-a-known-snippet>");
   });

@@ -169,7 +169,8 @@ export function buildCutArgs(opts: {
     format === "webm"
       ? ["-c:v", "libvpx-vp9", "-crf", "34", "-b:v", "0", "-row-mt", "1"]
       : ["-c:v", "libx264", "-preset", "slow", "-crf", "23", "-pix_fmt", "yuv420p"];
-  const audioCodec = format === "webm" ? ["-c:a", "libopus", "-b:a", "128k"] : ["-c:a", "aac", "-b:a", "128k"];
+  const audioCodec =
+    format === "webm" ? ["-c:a", "libopus", "-b:a", "128k"] : ["-c:a", "aac", "-b:a", "128k"];
 
   // "fast" mp4 with no watermark: stream-copy video, realign audio.
   if (format === "mp4" && mode === "fast" && !hasWatermark) {

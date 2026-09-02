@@ -23,10 +23,7 @@ describe("buildConcatArgs", () => {
   });
 
   it("synthesizes a silent track for inputs without audio", () => {
-    const args = buildConcatArgs(
-      [clip({ hasAudio: false }), clip({ path: "/b.mp4" })],
-      "/out.mp4",
-    );
+    const args = buildConcatArgs([clip({ hasAudio: false }), clip({ path: "/b.mp4" })], "/out.mp4");
     expect(args).toContain("lavfi");
     expect(args.some((a) => a.startsWith("anullsrc"))).toBe(true);
     // real inputs (2) + one silence input

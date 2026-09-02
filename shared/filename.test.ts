@@ -48,14 +48,9 @@ describe("resolveCollision", () => {
     expect(resolveCollision("v_2026-08-05.mp4", [])).toBe("v_2026-08-05.mp4");
   });
   it("adds an incrementing suffix", () => {
-    expect(resolveCollision("v_2026-08-05.mp4", ["v_2026-08-05.mp4"])).toBe(
-      "v_2026-08-05_(2).mp4",
+    expect(resolveCollision("v_2026-08-05.mp4", ["v_2026-08-05.mp4"])).toBe("v_2026-08-05_(2).mp4");
+    expect(resolveCollision("v_2026-08-05.mp4", ["v_2026-08-05.mp4", "v_2026-08-05_(2).mp4"])).toBe(
+      "v_2026-08-05_(3).mp4",
     );
-    expect(
-      resolveCollision("v_2026-08-05.mp4", [
-        "v_2026-08-05.mp4",
-        "v_2026-08-05_(2).mp4",
-      ]),
-    ).toBe("v_2026-08-05_(3).mp4");
   });
 });

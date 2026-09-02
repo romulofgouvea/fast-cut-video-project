@@ -1,4 +1,42 @@
+/* ----------------------------------------------------------------------------
+   Tailwind v4 + shadcn/ui bridge.
+   We load Tailwind's theme + utilities but NOT its preflight reset, so the
+   hand-written CSS below keeps owning the base layer. shadcn components consume
+   the `--color-*` tokens, which we point straight at the app's existing design
+   tokens so they follow the same light/dark theme (driven by [data-theme]).
+---------------------------------------------------------------------------- */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@import "tw-animate-css";
+
+/* Tailwind's `dark:` variant follows the same attribute the app already sets. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--foreground);
+  --color-popover: var(--card);
+  --color-popover-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: #ffffff;
+  --color-secondary: var(--panel-2);
+  --color-secondary-foreground: var(--foreground);
+  --color-muted: var(--panel-2);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--card-hover);
+  --color-accent-foreground: var(--foreground);
+  --color-destructive: var(--primary);
+  --color-border: var(--border);
+  --color-input: var(--border-strong);
+  --color-ring: var(--accent-2);
+}
+
 :root {
+  /* Dark is the default look; `<html data-theme="light">` opts into the palette
+     below it. The toggle in the topbar sets the attribute + remembers it. */
   --background: #09090b;
   --surface: #101013;
   --card: #18181b;
@@ -11,8 +49,11 @@
   --primary: #ef4444;
   --primary-hover: #dc2626;
   --accent-2: #3b82f6;
-  --ok: #22c55e;
+  --ok: #008080;
+  --ok-hover: #006666;
   --warn: #f59e0b;
+  --wave: #7c828e;
+  --wave-dim: #3f3f46;
   --radius: 0.625rem;
   --radius-sm: 8px;
   --radius-xs: 6px;
@@ -21,6 +62,29 @@
   --sidebar-w: 272px;
   --topbar-h: 68px;
   color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --background: #fafafa;
+  --surface: #ffffff;
+  --card: #ffffff;
+  --card-hover: #f4f4f5;
+  --panel-2: #f4f4f5;
+  --border: #e4e4e7;
+  --border-strong: #d4d4d8;
+  --foreground: #18181b;
+  --muted-foreground: #52525b;
+  --primary: #dc2626;
+  --primary-hover: #b91c1c;
+  --accent-2: #2563eb;
+  --ok: #0f766e;
+  --ok-hover: #115e59;
+  --warn: #b45309;
+  --wave: #9ca3af;
+  --wave-dim: #d4d4d8;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.16);
+  color-scheme: light;
 }
 
 * {
@@ -37,7 +101,12 @@ body {
   background: var(--background);
   color: var(--foreground);
   /* Sizing tuned for comfortable reading (40+): larger base, generous line-height. */
-  font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font:
+    16px/1.6 system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
 }
 
 /* Shown only while the persisted store hydrates (desktop SQLite backend). */
@@ -256,7 +325,9 @@ h3 {
   padding: 0 2px;
   flex: none;
   opacity: 0;
-  transition: opacity 0.12s ease, color 0.12s ease;
+  transition:
+    opacity 0.12s ease,
+    color 0.12s ease;
 }
 
 .nav-item:hover .nav-item__close,
@@ -493,18 +564,28 @@ input:focus {
   padding: 10px 16px;
   font: inherit;
   font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
   text-decoration: none;
   white-space: nowrap;
+  transition:
+    background 0.13s ease,
+    border-color 0.13s ease,
+    color 0.13s ease,
+    opacity 0.13s ease;
 }
 
-.btn:hover {
+.btn:hover:not(:disabled) {
   background: var(--card-hover);
   border-color: var(--muted-foreground);
 }
 
+.btn:active:not(:disabled) {
+  transform: translateY(0.5px);
+}
+
 .btn:disabled {
-  opacity: 0.45;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
@@ -518,24 +599,8 @@ input:focus {
   outline-offset: 2px;
 }
 
-.btn--primary {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: #fff;
-  font-weight: 600;
-}
-
-.btn--primary:hover:not(:disabled) {
-  background: var(--primary-hover);
-  border-color: var(--primary-hover);
-}
-
-.btn--secondary {
-  background: var(--accent-2);
-  border-color: var(--accent-2);
-  color: #fff;
-}
-
+/* Primary + the main "do it" actions share the brand teal. */
+.btn--primary,
 .btn--success {
   background: var(--ok);
   border-color: var(--ok);
@@ -543,22 +608,56 @@ input:focus {
   font-weight: 600;
 }
 
+.btn--primary:hover:not(:disabled),
 .btn--success:hover:not(:disabled) {
-  background: #16a34a;
-  border-color: #16a34a;
+  background: var(--ok-hover);
+  border-color: var(--ok-hover);
 }
 
+/* Secondary = neutral outline (downloads, "re-run", side choices). */
+.btn--secondary {
+  background: transparent;
+  border-color: var(--border-strong);
+  color: var(--foreground);
+}
+
+.btn--secondary:hover:not(:disabled) {
+  background: var(--card-hover);
+  border-color: var(--muted-foreground);
+}
+
+/* Ghost = borderless until hover (icon buttons, back links, transport). */
 .btn--ghost {
   background: transparent;
   border-color: transparent;
 }
 
-.btn--ghost:hover {
+.btn--ghost:hover:not(:disabled) {
   background: var(--card-hover);
   border-color: var(--border-strong);
 }
 
+/* Destructive confirm (modal primary button). */
+.btn--destructive {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+  font-weight: 600;
+}
+
+.btn--destructive:hover:not(:disabled) {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+}
+
+/* Inline danger: red text, tinted red on hover ("Remover" / "Cancelar" in a list). */
 .btn--danger {
+  color: var(--primary);
+}
+
+.btn--danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  border-color: transparent;
   color: var(--primary);
 }
 
@@ -639,6 +738,18 @@ input:focus {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
+}
+
+/* Portrait sources (Reels / Shorts / TikTok): upright frame, centered, black
+   pillarbox on the sides — the whole clip stays visible, nothing is cropped. */
+.preview__frame--vertical {
+  align-self: center;
+  width: auto;
+  max-width: 100%;
+  height: min(640px, 70vh);
+  aspect-ratio: 9 / 16;
+  margin: 0 auto;
+  background: #000;
 }
 
 .preview__frame iframe,
@@ -1804,7 +1915,9 @@ video::-webkit-media-controls-volume-slider {
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
-  transition: color 0.12s ease, background 0.12s ease;
+  transition:
+    color 0.12s ease,
+    background 0.12s ease;
 }
 
 .path-row__copy:hover {
@@ -1871,7 +1984,10 @@ video::-webkit-media-controls-volume-slider {
   overflow: hidden;
   box-shadow: var(--shadow-sm);
   cursor: grab;
-  transition: transform 0.12s ease, border-color 0.12s ease, opacity 0.12s ease;
+  transition:
+    transform 0.12s ease,
+    border-color 0.12s ease,
+    opacity 0.12s ease;
 }
 
 .montage-card:active {

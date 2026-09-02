@@ -25,12 +25,7 @@ export function CutMarkControls() {
   return (
     <div className="mark">
       <div className="mark__row">
-        <button
-          type="button"
-          className="btn btn--secondary"
-          onClick={markStart}
-          disabled={!ready}
-        >
+        <button type="button" className="btn btn--secondary" onClick={markStart} disabled={!ready}>
           ⏱ Marcar início (I)
         </button>
         <span className="mark__pending">
@@ -45,11 +40,7 @@ export function CutMarkControls() {
           ✂ Marcar fim (O)
         </button>
         {pendingStart !== null && (
-          <button
-            type="button"
-            className="btn btn--ghost btn--danger"
-            onClick={clearPendingStart}
-          >
+          <button type="button" className="btn btn--ghost btn--danger" onClick={clearPendingStart}>
             limpar
           </button>
         )}

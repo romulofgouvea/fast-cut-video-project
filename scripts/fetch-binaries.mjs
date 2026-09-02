@@ -24,7 +24,8 @@ const YTDLP_ASSET = {
 }[platform];
 
 const FFMPEG_ZIP = {
-  win32: "https://github.com/BtbN/FFmpeg-Builds/releases/latest/download/ffmpeg-master-latest-win64-gpl.zip",
+  win32:
+    "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip",
   darwin: null, // devs on macOS: `brew install ffmpeg`
   linux: null, // devs on Linux: `apt install ffmpeg` (Docker already has it)
 }[platform];
@@ -49,7 +50,11 @@ async function unzip(zipPath, destDir) {
   if (platform === "win32") {
     execFileSync(
       "powershell",
-      ["-NoProfile", "-Command", `Expand-Archive -Force -LiteralPath '${zipPath}' -DestinationPath '${destDir}'`],
+      [
+        "-NoProfile",
+        "-Command",
+        `Expand-Archive -Force -LiteralPath '${zipPath}' -DestinationPath '${destDir}'`,
+      ],
       { stdio: "inherit" },
     );
   } else {
@@ -62,10 +67,7 @@ async function fetchYtDlp() {
   if (!FORCE && (await exists(dest))) return console.log("yt-dlp: já existe, pulando");
   if (!YTDLP_ASSET) return console.log(`yt-dlp: plataforma ${platform} não suportada pelo script`);
   console.log("yt-dlp:");
-  await download(
-    `https://github.com/yt-dlp/yt-dlp/releases/latest/download/${YTDLP_ASSET}`,
-    dest,
-  );
+  await download(`https://github.com/yt-dlp/yt-dlp/releases/latest/download/${YTDLP_ASSET}`, dest);
   if (platform !== "win32") await fs.chmod(dest, 0o755);
   console.log(`  -> ${dest}`);
 }

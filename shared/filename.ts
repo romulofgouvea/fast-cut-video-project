@@ -46,11 +46,7 @@ export function cutOutputName(
 }
 
 /** Name for a bundled download: "<name>_<YYYY-MM-DD>.<ext>" (ext without dot). */
-export function bundleName(
-  base: string | undefined | null,
-  dateStr: string,
-  ext: string,
-): string {
+export function bundleName(base: string | undefined | null, dateStr: string, ext: string): string {
   return `${fileBase(base)}_${dateStr}.${ext}`;
 }
 

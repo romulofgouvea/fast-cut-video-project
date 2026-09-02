@@ -23,11 +23,11 @@ num arquivo `.mp4` separado. Roda no seu computador, sem instalar nada além do 
 
 Vá em **[Releases](../../releases/latest)** e baixe o instalador do seu sistema:
 
-| Sistema | Arquivo                       |
-| ------- | ----------------------------- |
-| Windows | `.msi` ou `.exe`              |
-| macOS   | `.dmg`                        |
-| Linux   | `.AppImage` ou `.deb`         |
+| Sistema | Arquivo               |
+| ------- | --------------------- |
+| Windows | `.exe` (instalador)   |
+| macOS   | `.dmg`                |
+| Linux   | `.AppImage` ou `.deb` |
 
 Instale e abra normalmente. Não precisa de Docker nem de mais nada — o `ffmpeg` e o
 `yt-dlp` já vêm dentro. Os vídeos ficam numa pasta do seu usuário; a tela inicial mostra

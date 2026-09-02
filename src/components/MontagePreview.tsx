@@ -4,9 +4,7 @@ import { previewUrl, uploadPreviewUrl } from "../lib/api";
 import { formatTimecode } from "../../shared/time";
 
 const srcFor = (m: MontageItem) =>
-  m.ref.kind === "cut"
-    ? previewUrl(m.ref.jobId, m.ref.position)
-    : uploadPreviewUrl(m.ref.uploadId);
+  m.ref.kind === "cut" ? previewUrl(m.ref.jobId, m.ref.position) : uploadPreviewUrl(m.ref.uploadId);
 
 /**
  * Stitched preview of the whole montage timeline. Reuses the editor player's

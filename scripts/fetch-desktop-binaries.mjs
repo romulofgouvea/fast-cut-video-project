@@ -22,7 +22,9 @@ const FORCE = process.argv.includes("--force");
 const platform = os.platform();
 const exe = platform === "win32" ? ".exe" : "";
 
-const YTDLP_ASSET = { win32: "yt-dlp.exe", linux: "yt-dlp_linux", darwin: "yt-dlp_macos" }[platform];
+const YTDLP_ASSET = { win32: "yt-dlp.exe", linux: "yt-dlp_linux", darwin: "yt-dlp_macos" }[
+  platform
+];
 
 async function download(url, dest) {
   process.stdout.write(`  ↓ ${url}\n`);
@@ -56,10 +58,7 @@ async function provide(name, fetchFn) {
 
 async function fetchYtDlp(out) {
   if (!YTDLP_ASSET) throw new Error(`yt-dlp: plataforma ${platform} não suportada`);
-  await download(
-    `https://github.com/yt-dlp/yt-dlp/releases/latest/download/${YTDLP_ASSET}`,
-    out,
-  );
+  await download(`https://github.com/yt-dlp/yt-dlp/releases/latest/download/${YTDLP_ASSET}`, out);
 }
 
 // The BtbN "master-latest" builds live on the release tagged literally `latest`
@@ -73,7 +72,11 @@ async function fetchFfmpegWin(which, out) {
   await download(`${BTBN}/ffmpeg-master-latest-win64-gpl.zip`, zip);
   execFileSync(
     "powershell",
-    ["-NoProfile", "-Command", `Expand-Archive -Force -LiteralPath '${zip}' -DestinationPath '${tmp}'`],
+    [
+      "-NoProfile",
+      "-Command",
+      `Expand-Archive -Force -LiteralPath '${zip}' -DestinationPath '${tmp}'`,
+    ],
     { stdio: "inherit" },
   );
   const dir = (await fs.readdir(tmp, { withFileTypes: true })).find(

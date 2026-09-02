@@ -239,9 +239,11 @@ describe("montage projects", () => {
 
     const items = (id: string) => s().montageProjects.find((m) => m.id === id)!.items;
     expect(items(a).map((i) => i.key)).toEqual(["cut:J:1"]);
-    expect(s().montageProjects.find((m) => m.name === "B")!.items.map((i) => i.key)).toEqual([
-      "cut:K:1",
-    ]);
+    expect(
+      s()
+        .montageProjects.find((m) => m.name === "B")!
+        .items.map((i) => i.key),
+    ).toEqual(["cut:K:1"]);
 
     // clear only touches the active montage
     s().clearMontage();
@@ -261,9 +263,11 @@ describe("montage projects", () => {
     for (const m of s().montageProjects) {
       expect(m.items.every((i) => i.ref.kind !== "cut")).toBe(true);
     }
-    expect(s().montageProjects.find((m) => m.name === "A")!.items.map((i) => i.key)).toEqual([
-      "upload:U",
-    ]);
+    expect(
+      s()
+        .montageProjects.find((m) => m.name === "A")!
+        .items.map((i) => i.key),
+    ).toEqual(["upload:U"]);
   });
 
   it("stored round-trip keeps id/name/items and compilationId -> compilation.id", () => {

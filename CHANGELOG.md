@@ -41,10 +41,13 @@ A versão em `package.json` deve bater com a tag `v*` que dispara a release.
   - `server/index.ts` aceita `PUBLIC_DIR` (onde está o SPA) e `HOST` (o desktop liga em
     `127.0.0.1`).
 
+## [0.0.1-beta] - 2026-09-02
+
 Primeira _prerelease_ pública sob o nome **Fast Cut Vídeo**. Imagem Docker em
 `ghcr.io/<owner>/fast-cut-video:0.0.1-beta`.
 
 ### Adicionado
+
 - **Outras fontes de vídeo além do YouTube**, sem SDK de terceiros. YouTube mantém o
   player completo (scrub, "Marcar início/fim"); nas outras fontes o preview é um
   `<iframe>` de embed simples (ou a thumbnail) e os tempos são digitados. Novo
@@ -101,12 +104,14 @@ Primeira _prerelease_ pública sob o nome **Fast Cut Vídeo**. Imagem Docker em
 - Tooltips nos botões do player e nas opções de modo de corte.
 
 ### Corrigido
+
 - **Rumble (e outros sites) davam HTTP 403 ao baixar/ler metadados.** O yt-dlp agora
   roda com `--impersonate chrome` (fingerprint de navegador, via curl_cffi já embutido
   nos binários oficiais). Configurável por `YTDLP_IMPERSONATE`; se o binário não
   suportar, o app detecta na 1ª falha e segue sem a flag.
 
 ### Alterado
+
 - **Menor espaço em disco, mantendo boa qualidade:**
   - Download limitado a 1080p (`SOURCE_MAX_HEIGHT`, default 1080), preferindo H.264/mp4 —
     4K/1440p enchiam o cache à toa.
@@ -117,6 +122,7 @@ Primeira _prerelease_ pública sob o nome **Fast Cut Vídeo**. Imagem Docker em
 - Ícones removidos dos botões (só texto), incluindo o `←` do botão de voltar.
 
 ### Corrigido
+
 - `<ConfirmDialog>` vazava `overflow: hidden` no `<body>` (dependência instável no
   `useEffect`) e o player do YouTube renderizava **na frente** da modal — agora a modal
   é portada pro `<body>` (z-index 200), e o `<iframe>` some enquanto a modal está aberta.
@@ -129,6 +135,7 @@ Primeira _prerelease_ pública sob o nome **Fast Cut Vídeo**. Imagem Docker em
 Publicado como `yt-cut-cut` (renomeado para `fast-cut-video` em seguida).
 
 ### Adicionado
+
 - App web em container Docker: baixa um vídeo do YouTube uma vez e gera um `.mp4` por
   intervalo de corte.
 - Player embutido com marcação `I`/`O`, atalhos de teclado e scrub próprio.

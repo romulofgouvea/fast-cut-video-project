@@ -71,7 +71,8 @@ export function App() {
   let subtitle = "Visão geral do seu estúdio";
   const actions: Action[] = [];
   // A name field replaces the static <h1> when the open item is renameable.
-  let nameField: { value: string; placeholder: string; onChange: (v: string) => void } | null = null;
+  let nameField: { value: string; placeholder: string; onChange: (v: string) => void } | null =
+    null;
 
   if (route === "home") {
     actions.push({ label: "Novo projeto", onClick: createProject, kind: "primary" });
@@ -82,10 +83,7 @@ export function App() {
     actions.push({ label: "Novo projeto", onClick: createProject, kind: "primary" });
   } else if (route === "projects" && active) {
     title = active.name?.trim() || active.title?.trim() || "Projeto";
-    subtitle = [
-      PHASE_LABEL[active.phase],
-      active.duration ? formatTimecode(active.duration) : null,
-    ]
+    subtitle = [PHASE_LABEL[active.phase], active.duration ? formatTimecode(active.duration) : null]
       .filter(Boolean)
       .join(" · ");
 
@@ -117,7 +115,11 @@ export function App() {
   } else if (route === "montage" && !activeMontage) {
     title = "Editor";
     subtitle = `${montageCount} ${montageCount === 1 ? "montagem" : "montagens"}`;
-    actions.push({ label: "Nova montagem", onClick: () => createMontageProject(), kind: "primary" });
+    actions.push({
+      label: "Nova montagem",
+      onClick: () => createMontageProject(),
+      kind: "primary",
+    });
   } else if (route === "montage" && activeMontage) {
     title = activeMontage.name?.trim() || "Montagem sem nome";
     subtitle = montageStatus(activeMontage);
@@ -151,32 +153,39 @@ export function App() {
             </div>
 
             <div className="topbar__actions">
-              {actions.map((a) => (
-                <button
-                  key={a.label}
-                  type="button"
-                  className="btn btn--ghost"
-                  onClick={a.onClick}
-                >
-                  {a.label}
-                </button>
-              ))}
               <ThemeToggle />
             </div>
           </div>
 
           <div className="topbar__meta">
-            {nameField ? (
-              <input
-                className="topbar__title-input"
-                value={nameField.value}
-                placeholder={nameField.placeholder}
-                onChange={(e) => nameField!.onChange(e.target.value)}
-              />
-            ) : (
-              <h1 className="topbar__title">{title}</h1>
+            <div className="topbar__meta-text">
+              {nameField ? (
+                <input
+                  className="topbar__title-input"
+                  value={nameField.value}
+                  placeholder={nameField.placeholder}
+                  onChange={(e) => nameField!.onChange(e.target.value)}
+                />
+              ) : (
+                <h1 className="topbar__title">{title}</h1>
+              )}
+              <p className="topbar__subtitle">{subtitle}</p>
+            </div>
+
+            {actions.length > 0 && (
+              <div className="topbar__meta-actions">
+                {actions.map((a) => (
+                  <button
+                    key={a.label}
+                    type="button"
+                    className={`btn btn--sm ${a.kind === "primary" ? "btn--primary" : "btn--secondary"}`}
+                    onClick={a.onClick}
+                  >
+                    {a.label}
+                  </button>
+                ))}
+              </div>
             )}
-            <p className="topbar__subtitle">{subtitle}</p>
           </div>
         </header>
 

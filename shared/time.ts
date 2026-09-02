@@ -21,8 +21,7 @@ export function formatTimecode(totalSeconds: number): string {
 }
 
 export type CutValidation =
-  | { ok: true; startSec: number; endSec: number }
-  | { ok: false; reason: string };
+  { ok: true; startSec: number; endSec: number } | { ok: false; reason: string };
 
 /**
  * Validate a start/end pair. `durationSec` (when provided) bounds `end`.

@@ -104,7 +104,9 @@ async function main() {
   await shot("screenshot-progress.png");
 
   // 4. Results screen.
-  await page.getByRole("heading", { name: /corte\(s\) prontos/ }).waitFor({ state: "visible", timeout: 60_000 });
+  await page
+    .getByRole("heading", { name: /corte\(s\) prontos/ })
+    .waitFor({ state: "visible", timeout: 60_000 });
   await page.waitForTimeout(800);
   await shot("screenshot-results.png");
 

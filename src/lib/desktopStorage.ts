@@ -14,9 +14,7 @@ async function getDb(): Promise<Database> {
     dbPromise = (async () => {
       const { default: Sql } = await import("@tauri-apps/plugin-sql");
       const db = await Sql.load("sqlite:fast-cut-video.db");
-      await db.execute(
-        "CREATE TABLE IF NOT EXISTS kv (key TEXT PRIMARY KEY, value TEXT NOT NULL)",
-      );
+      await db.execute("CREATE TABLE IF NOT EXISTS kv (key TEXT PRIMARY KEY, value TEXT NOT NULL)");
       return db;
     })();
   }
@@ -26,10 +24,9 @@ async function getDb(): Promise<Database> {
 export const desktopStorage: StateStorage = {
   async getItem(name) {
     const db = await getDb();
-    const rows = await db.select<{ value: string }[]>(
-      "SELECT value FROM kv WHERE key = $1",
-      [name],
-    );
+    const rows = await db.select<{ value: string }[]>("SELECT value FROM kv WHERE key = $1", [
+      name,
+    ]);
     return rows.length > 0 ? rows[0].value : null;
   },
   async setItem(name, value) {
