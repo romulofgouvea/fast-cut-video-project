@@ -44,9 +44,12 @@ export function CutsManager() {
         <p className="hint">Nenhum corte ainda. Marque no player ou adicione manualmente.</p>
       ) : (
         <ol className="cuts__list">
-          {cuts.map((cut, i) => (
-            <CutRow key={cut.id} cut={cut} index={i} />
-          ))}
+          {cuts
+            .map((cut, i) => ({ cut, i }))
+            .reverse()
+            .map(({ cut, i }) => (
+              <CutRow key={cut.id} cut={cut} index={i} />
+            ))}
         </ol>
       )}
     </section>

@@ -33,34 +33,36 @@ export function Editor() {
     if (projectId && infoStatus === "idle") void loadVideoInfo(projectId);
   }, [projectId, infoStatus, loadVideoInfo]);
 
-  // Start (or keep) the source download in the background and poll its progress
-  // for the status line — no cuts are made here, that only happens on "Processar".
-  // YouTube has its own iframe player, so wait for the first cut before pulling the
-  // file; every other provider needs the download for the local scrub preview, so
-  // start it right away. The server dedupes / no-ops if it's already done.
+  // Background source download: `wantSource` decides when to *kick it off*, but we
+  // always *poll* the server's status while the editor is open so the progress
+  // ribbon survives leaving and re-opening the project (and reflects a download
+  // another tab / an earlier visit started). No cuts are made here.
+  // YouTube has its own iframe player, so we only start pulling the file after the
+  // first cut; every other provider needs it for the local scrub preview.
   const sourceUrl = project?.sourceUrl.trim() ?? "";
   const hasCuts = (project?.cuts.length ?? 0) > 0;
   const hasJob = Boolean(project?.job);
   const isYouTube = sourceUrl ? detectSource(sourceUrl).provider === "youtube" : false;
   const wantSource = Boolean(sourceUrl) && !hasJob && (hasCuts || !isYouTube);
   useEffect(() => {
-    if (!wantSource) return;
+    if (!sourceUrl || hasJob) return;
     let alive = true;
     let timer = 0;
-    void prefetchSource(sourceUrl);
+    if (wantSource) void prefetchSource(sourceUrl);
     const tick = async () => {
       const s = await prefetchStatus(sourceUrl);
       if (!alive) return;
       setDl(s);
-      // Keep polling while it downloads; stop on ready or error (error offers a retry).
-      if (s.state !== "ready" && s.state !== "error") timer = window.setTimeout(tick, 1500);
+      // Poll on while it downloads; also while idle if we're expecting it to start.
+      const keepGoing = s.state === "downloading" || (wantSource && s.state === "idle");
+      if (keepGoing) timer = window.setTimeout(tick, 1500);
     };
-    timer = window.setTimeout(tick, 400);
+    timer = window.setTimeout(tick, 300);
     return () => {
       alive = false;
       window.clearTimeout(timer);
     };
-  }, [wantSource, sourceUrl, dlRetry]);
+  }, [sourceUrl, hasJob, wantSource, dlRetry]);
 
   const retryDownload = () => {
     setDl({ state: "downloading", percent: 0 });
