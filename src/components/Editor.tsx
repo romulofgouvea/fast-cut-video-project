@@ -9,7 +9,7 @@ import {
   prefetchStatus,
   type SourceStatus,
 } from "../lib/api";
-import { detectSource } from "../../shared/videoSource";
+import { setAutoDownload, useAutoDownload } from "../lib/autoDownload";
 import { uuid } from "../lib/uuid";
 import { VideoPreview } from "./VideoPreview";
 import { CutsManager } from "./CutsManager";
@@ -25,6 +25,7 @@ export function Editor() {
   const [error, setError] = useState<string>();
   const [dl, setDl] = useState<SourceStatus>({ state: "idle", percent: 0 });
   const [dlRetry, setDlRetry] = useState(0);
+  const autoDownload = useAutoDownload();
 
   const projectId = project?.id;
   const infoStatus = project?.infoStatus;
@@ -37,13 +38,12 @@ export function Editor() {
   // always *poll* the server's status while the editor is open so the progress
   // ribbon survives leaving and re-opening the project (and reflects a download
   // another tab / an earlier visit started). No cuts are made here.
-  // YouTube has its own iframe player, so we only start pulling the file after the
-  // first cut; every other provider needs it for the local scrub preview.
+  // With "baixar automaticamente" on (default), we start as soon as the editor
+  // opens; off, we wait until there's a cut (or "Processar" pulls it).
   const sourceUrl = project?.sourceUrl.trim() ?? "";
   const hasCuts = (project?.cuts.length ?? 0) > 0;
   const hasJob = Boolean(project?.job);
-  const isYouTube = sourceUrl ? detectSource(sourceUrl).provider === "youtube" : false;
-  const wantSource = Boolean(sourceUrl) && !hasJob && (hasCuts || !isYouTube);
+  const wantSource = Boolean(sourceUrl) && !hasJob && (autoDownload || hasCuts);
   useEffect(() => {
     if (!sourceUrl || hasJob) return;
     let alive = true;
@@ -155,6 +155,16 @@ export function Editor() {
           <section className="editor__panel process-block">
             <CutModeToggle />
             <OutputOptions />
+
+            <label className="dl-pref">
+              <input
+                type="checkbox"
+                checked={autoDownload}
+                onChange={(e) => setAutoDownload(e.target.checked)}
+              />
+              Baixar o vídeo automaticamente
+              <span className="hint">— assim que o editor abre, sem esperar o 1º corte</span>
+            </label>
 
             {dl.state === "ready" && (
               <p className="hint hint--ok">
