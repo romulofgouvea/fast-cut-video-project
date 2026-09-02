@@ -140,18 +140,20 @@ export function Editor() {
       <div className="editor__grid">
         <div className="editor__col editor__col--left">
           <div className="editor__panel editor__panel--video">
+            {dl.state === "downloading" && (
+              <div className="dl-ribbon" role="status" aria-live="polite">
+                <div className="dl-ribbon__band">
+                  <span>Baixando</span>
+                  <strong>{Math.round(dl.percent)}%</strong>
+                </div>
+              </div>
+            )}
             <VideoPreview localReady={dl.state === "ready"} />
           </div>
           <section className="editor__panel process-block">
             <CutModeToggle />
             <OutputOptions />
 
-            {dl.state === "downloading" && (
-              <p className="hint">
-                Baixando o vídeo em segundo plano… {dl.percent}% — depois a prévia com marcação de
-                tempo abre aqui e o “Processar” só corta.
-              </p>
-            )}
             {dl.state === "ready" && (
               <p className="hint hint--ok">
                 Vídeo baixado — prévia com scrub disponível e “Processar” vai direto aos cortes.
