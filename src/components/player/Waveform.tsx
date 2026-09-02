@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { formatTimecode } from "../../../shared/time";
 
 export type CutРegionInput = { startSec: number; endSec: number };
 
@@ -34,6 +35,7 @@ export function Waveform({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [width, setWidth] = useState(0);
   const [drag, setDrag] = useState<{ fromSec: number; toSec: number; cut: boolean } | null>(null);
+  const [hoverSec, setHoverSec] = useState<number | null>(null);
 
   useEffect(() => {
     const el = wrapRef.current;
@@ -92,6 +94,13 @@ export function Waveform({
       ctx.fillRect(a, 0, Math.max(1, b - a), HEIGHT);
     }
 
+    // Hover guide (only when not dragging).
+    if (hoverSec != null && !drag) {
+      ctx.strokeStyle = hexToRgba(wave.startsWith("#") ? wave : "#9ca3af", 0.9);
+      ctx.lineWidth = 1;
+      line(ctx, xOf(hoverSec), HEIGHT);
+    }
+
     // Pending "mark start".
     if (pendingStartSec != null) {
       ctx.strokeStyle = ok;
@@ -103,7 +112,7 @@ export function Waveform({
     ctx.strokeStyle = accent;
     ctx.lineWidth = 2;
     line(ctx, xOf(currentTime), HEIGHT);
-  }, [peaks, duration, currentTime, cuts, pendingStartSec, drag, width]);
+  }, [peaks, duration, currentTime, cuts, pendingStartSec, drag, hoverSec, width]);
 
   const secAtClientX = (clientX: number): number => {
     const rect = wrapRef.current!.getBoundingClientRect();
@@ -123,11 +132,13 @@ export function Waveform({
         if (!e.shiftKey) onSeek(sec);
       }}
       onPointerMove={(e) => {
-        if (!drag) return;
         const sec = secAtClientX(e.clientX);
+        setHoverSec(sec);
+        if (!drag) return;
         setDrag({ ...drag, toSec: sec });
         if (!drag.cut) onSeek(sec);
       }}
+      onPointerLeave={() => setHoverSec(null)}
       onPointerUp={() => {
         if (drag?.cut && onCreateCut) {
           const a = Math.min(drag.fromSec, drag.toSec);
@@ -138,6 +149,16 @@ export function Waveform({
       }}
     >
       <canvas ref={canvasRef} style={{ width: "100%", height: HEIGHT }} />
+      {hoverSec != null && duration > 0 && width > 0 && (
+        <span
+          className="waveform__tip"
+          style={{
+            left: `${Math.min(width - 30, Math.max(30, (hoverSec / duration) * width))}px`,
+          }}
+        >
+          {formatTimecode(drag ? drag.toSec : hoverSec)}
+        </span>
+      )}
     </div>
   );
 }
