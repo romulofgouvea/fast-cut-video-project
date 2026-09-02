@@ -372,11 +372,6 @@ h3 {
   min-width: 0;
 }
 
-.topbar__main {
-  min-width: 0;
-  flex: 1;
-}
-
 .topbar__collapse {
   display: inline-flex;
   align-items: center;

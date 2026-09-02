@@ -19,7 +19,7 @@ import { MontageWatchers } from "./components/MontageWatchers";
 import { ThemeToggle } from "./components/ThemeToggle";
 import { useGlobalShortcuts } from "./lib/useGlobalShortcuts";
 
-type Action = { label: string; onClick: () => void; kind?: "primary" | "ghost" };
+type Action = { label: string; onClick: () => void; kind?: "primary" };
 
 /** The per-project flow: URL step → editor → progress → results. */
 function ProjectFlow() {
