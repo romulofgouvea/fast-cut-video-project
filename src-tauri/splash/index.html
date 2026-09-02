@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fast Cut Vídeo</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        background: #0d1117;
+        color: #c9d1d9;
+        font: 14px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      .mark {
+        width: 56px;
+        height: 56px;
+        border-radius: 13px;
+        background: #008080;
+        display: grid;
+        place-items: center;
+      }
+      .mark svg {
+        width: 34px;
+        height: 34px;
+        fill: #fff;
+      }
+      .spinner {
+        width: 22px;
+        height: 22px;
+        border: 3px solid #30363d;
+        border-top-color: #2f81f7;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      p {
+        margin: 0;
+        opacity: 0.7;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mark">
+      <svg viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M8 9V25l8.5-3V12z" />
+        <path d="M18.5 11v10L26 16z" />
+      </svg>
+    </div>
+    <div class="spinner" id="spinner"></div>
+    <p id="msg">Iniciando o Fast Cut Vídeo…</p>
+    <script>
+      // If the shell hasn't navigated us to the app after ~50s, something is wrong.
+      setTimeout(function () {
+        var s = document.getElementById("spinner");
+        if (s) s.remove();
+        document.getElementById("msg").textContent =
+          "Não consegui iniciar o servidor local. Feche e abra o app de novo.";
+      }, 50000);
+    </script>
+  </body>
+</html>

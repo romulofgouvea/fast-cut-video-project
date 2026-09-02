@@ -1,0 +1,86 @@
+name: Release Desktop
+
+# Dispara ao empurrar uma tag "v*" (ex.: v0.1.0). Builda o app nas três
+# plataformas e publica os instaladores (.exe, .dmg, .deb/.rpm/.AppImage) como
+# assets da release do GitHub criada a partir da tag.
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    strategy:
+      fail-fast: false
+      matrix:
+        # macOS sai por arquitetura (não universal): o servidor sidecar é um
+        # binário do @yao-pkg/pkg e não pode ser combinado com `lipo`.
+        include:
+          - platform: windows-latest
+            args: ""
+          - platform: macos-14 # Apple Silicon
+            args: ""
+          - platform: macos-13 # Intel
+            args: ""
+          - platform: ubuntu-22.04
+            args: ""
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar dependências de sistema (Linux)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libxdo-dev \
+            libssl-dev \
+            libclang-dev \
+            perl \
+            xz-utils
+
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache do Cargo
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: "./src-tauri -> target"
+
+      - name: Instalar dependências do frontend
+        run: npm ci
+
+      - name: Empacotar o servidor (sidecar) + binários
+        run: |
+          npm run build:desktop-server
+          npm run fetch:desktop-bin
+          npm run package:server
+
+      - name: Build e publicação (tauri-action)
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: "Fast Cut Video ${{ github.ref_name }}"
+          releaseBody: "Build automático gerado pela tag ${{ github.ref_name }}. Baixe o instalador correspondente ao seu sistema abaixo."
+          releaseDraft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          args: ${{ matrix.args }}

@@ -1,0 +1,13 @@
+dist/
+data/
+bin/
+node_modules/
+package-lock.json
+
+# Tauri: build output + staged artifacts (see src-tauri/.gitignore)
+src-tauri/target/
+src-tauri/gen/
+src-tauri/public/
+src-tauri/binaries/
+src-tauri/icons/
+test-upload.mjs

@@ -1,0 +1,14 @@
+services:
+  fast-cut-video:
+    build: .
+    image: fast-cut-video
+    container_name: fast-cut-video
+    ports:
+      - "3000:3000"
+    environment:
+      DATA_DIR: /data
+      PORT: "3000"
+    volumes:
+      # output/, sources/ and jobs/ live here — survives `docker compose down && up`
+      - ./data:/data
+    restart: unless-stopped

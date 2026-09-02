@@ -1,0 +1,91 @@
+name: Release
+
+# Dispara ao empurrar uma tag "v*" (ex.: v1.2.0). Roda typecheck + testes, builda a
+# imagem Docker e publica em ghcr.io/<owner>/tools/fast-cut-video (tags :1.2.0, :1.2, :latest),
+# além de criar a Release do GitHub a partir da tag. Os instaladores desktop saem no
+# workflow separado release-desktop.yml (mesma Release).
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write # criar a release
+  packages: write # publicar a imagem no GHCR
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Conferir versão x tag
+        run: |
+          PKG=$(node -p "require('./package.json').version")
+          TAG=${GITHUB_REF_NAME#v}
+          if [ "$PKG" != "$TAG" ]; then
+            echo "::error::package.json ($PKG) não bate com a tag ($TAG). Alinhe a versão antes de publicar."
+            exit 1
+          fi
+
+      - name: Typecheck + testes
+        run: |
+          npm run typecheck
+          npm test
+
+      - name: Login no GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Metadados da imagem
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/tools/${{ github.event.repository.name }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable=${{ !contains(github.ref_name, '-') }}
+
+      - name: Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build e push da imagem
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Criar release do GitHub
+        uses: softprops/action-gh-release@v2
+        with:
+          name: fast-cut-video ${{ github.ref_name }}
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          generate_release_notes: true
+          body: |
+            Imagem Docker publicada automaticamente pela tag `${{ github.ref_name }}`:
+
+            ```bash
+            docker run -p 3000:3000 -v "$PWD/data:/data" \
+              ghcr.io/${{ github.repository_owner }}/tools/${{ github.event.repository.name }}:${{ github.ref_name }}
+            ```
+
+            Instaladores desktop (Windows/macOS/Linux) nos assets abaixo. Veja o
+            `CHANGELOG.md` para as mudanças desta versão.

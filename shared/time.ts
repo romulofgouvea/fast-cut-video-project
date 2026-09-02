@@ -1,0 +1,41 @@
+/** Utilities for "HH:MM:SS" timecodes used by cut intervals. */
+
+const TIMECODE_RE = /^(\d{1,2}):([0-5]?\d):([0-5]?\d)$/;
+
+/** Parse "HH:MM:SS" (or "H:MM:SS") into seconds. Returns null when malformed. */
+export function parseTimecode(value: string): number | null {
+  const m = TIMECODE_RE.exec(value.trim());
+  if (!m) return null;
+  const [, h, min, s] = m;
+  return Number(h) * 3600 + Number(min) * 60 + Number(s);
+}
+
+/** Format seconds into "HH:MM:SS" (zero-padded, hours can exceed 2 digits). */
+export function formatTimecode(totalSeconds: number): string {
+  const secs = Math.max(0, Math.floor(totalSeconds));
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  const s = secs % 60;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(h)}:${pad(m)}:${pad(s)}`;
+}
+
+export type CutValidation =
+  | { ok: true; startSec: number; endSec: number }
+  | { ok: false; reason: string };
+
+/**
+ * Validate a start/end pair. `durationSec` (when provided) bounds `end`.
+ * Overlap between different cuts is allowed by design, so it is not checked here.
+ */
+export function validateCut(start: string, end: string, durationSec?: number): CutValidation {
+  const startSec = parseTimecode(start);
+  const endSec = parseTimecode(end);
+  if (startSec === null) return { ok: false, reason: "Início inválido (use HH:MM:SS)" };
+  if (endSec === null) return { ok: false, reason: "Fim inválido (use HH:MM:SS)" };
+  if (endSec <= startSec) return { ok: false, reason: "O fim deve ser maior que o início" };
+  if (durationSec !== undefined && endSec > Math.ceil(durationSec)) {
+    return { ok: false, reason: "O fim ultrapassa a duração do vídeo" };
+  }
+  return { ok: true, startSec, endSec };
+}

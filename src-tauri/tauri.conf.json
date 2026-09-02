@@ -1,0 +1,46 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Fast Cut Video",
+  "version": "../package.json",
+  "identifier": "com.romulofgouvea.fastcutvideo",
+  "build": {
+    "beforeDevCommand": "npm run desktop:stage",
+    "beforeBuildCommand": "npm run desktop:stage",
+    "frontendDist": "splash"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Fast Cut Vídeo",
+        "url": "index.html",
+        "width": 1280,
+        "height": 832,
+        "minWidth": 960,
+        "minHeight": 600,
+        "resizable": true,
+        "visible": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis", "app", "dmg", "appimage", "deb"],
+    "category": "Video",
+    "shortDescription": "Baixa e recorta vídeos",
+    "longDescription": "Baixa um vídeo da internet e recorta os pedaços que você quiser, cada um num arquivo separado.",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "externalBin": ["binaries/fast-cut-video-server"],
+    "resources": ["public/**/*", "binaries/vendor/*"]
+  },
+  "plugins": {}
+}
