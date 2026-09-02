@@ -20,6 +20,13 @@ export function formatTimecode(totalSeconds: number): string {
   return `${pad(h)}:${pad(m)}:${pad(s)}`;
 }
 
+/** Formatted length of a cut from its "HH:MM:SS" bounds; null when unparseable or empty. */
+export function cutDuration(start: string, end: string): string | null {
+  const s = parseTimecode(start);
+  const e = parseTimecode(end);
+  return s !== null && e !== null && e > s ? formatTimecode(e - s) : null;
+}
+
 export type CutValidation =
   { ok: true; startSec: number; endSec: number } | { ok: false; reason: string };
 

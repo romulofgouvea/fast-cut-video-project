@@ -75,7 +75,7 @@ export function CutRow({ cut, index }: Props) {
       {!result.ok && <p className="hint hint--error">{result.reason}</p>}
 
       <div className="cut-row__actions">
-        <span className="cut-row__dur" title="Duração do corte">
+        <span className="dur-badge" title="Duração do corte">
           {result.ok ? formatTimecode(result.endSec - result.startSec) : "--:--:--"}
         </span>
         <button

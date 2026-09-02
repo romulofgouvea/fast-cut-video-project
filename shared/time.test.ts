@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatTimecode, parseTimecode, validateCut } from "./time";
+import { cutDuration, formatTimecode, parseTimecode, validateCut } from "./time";
 
 describe("parseTimecode", () => {
   it("parses HH:MM:SS", () => {
@@ -20,6 +20,18 @@ describe("formatTimecode", () => {
     expect(formatTimecode(0)).toBe("00:00:00");
     expect(formatTimecode(3723)).toBe("01:02:03");
     expect(formatTimecode(90)).toBe("00:01:30");
+  });
+});
+
+describe("cutDuration", () => {
+  it("formats the span between two timecodes", () => {
+    expect(cutDuration("00:01:00", "00:02:30")).toBe("00:01:30");
+    expect(cutDuration("01:00:00", "01:05:05")).toBe("00:05:05");
+  });
+  it("returns null when empty or not a positive span", () => {
+    expect(cutDuration("", "00:01:00")).toBeNull();
+    expect(cutDuration("00:02:00", "00:02:00")).toBeNull();
+    expect(cutDuration("00:03:00", "00:02:00")).toBeNull();
   });
 });
 

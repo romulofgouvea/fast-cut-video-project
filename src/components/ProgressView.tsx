@@ -3,6 +3,7 @@ import { useStore, useActiveProject } from "../store";
 import { ClipVideo } from "./ClipVideo";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { cancelJob, previewUrl } from "../lib/api";
+import { cutDuration } from "../../shared/time";
 import type { CutResult } from "../../shared/types";
 
 const STATUS_LABEL: Record<CutResult["status"], string> = {
@@ -119,6 +120,9 @@ export function ProgressView() {
                 {src && (
                   <span className="progress-card__range">
                     {src.start} → {src.end}
+                    {cutDuration(src.start, src.end) && (
+                      <span className="dur-badge">{cutDuration(src.start, src.end)}</span>
+                    )}
                   </span>
                 )}
                 {c.error && <p className="hint hint--error">{c.error}</p>}

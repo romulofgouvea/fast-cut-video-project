@@ -1101,8 +1101,9 @@ input:focus {
   border-top: 1px solid var(--border);
 }
 
-.cut-row__dur {
-  margin-right: auto;
+/* Cut length pill — same look in the editor row footer, progress and results. */
+.dur-badge {
+  display: inline-block;
   padding: 2px 7px;
   border-radius: var(--radius-xs);
   background: var(--panel-2);
@@ -1111,6 +1112,16 @@ input:focus {
   font-size: 12px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+}
+
+.cut-row__actions .dur-badge {
+  margin-right: auto;
+}
+
+.progress-card__range .dur-badge,
+.result-card__range .dur-badge {
+  margin-left: 8px;
+  padding: 1px 6px;
 }
 
 .cut-row__action {
@@ -1898,16 +1909,6 @@ video::-webkit-media-controls-volume-slider {
   font-size: 13px;
   color: var(--muted-foreground);
   font-variant-numeric: tabular-nums;
-}
-
-.result-card__dur {
-  margin-left: 8px;
-  padding: 1px 6px;
-  border-radius: var(--radius-xs);
-  background: var(--panel-2);
-  border: 1px solid var(--border);
-  font-size: 12px;
-  font-weight: 600;
 }
 
 .result-card__file {
