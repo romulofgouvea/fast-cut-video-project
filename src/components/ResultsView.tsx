@@ -2,7 +2,15 @@ import { useState } from "react";
 import { useStore, useActiveProject } from "../store";
 import { ClipVideo } from "./ClipVideo";
 import { ConfirmDialog } from "./ConfirmDialog";
-import { createJob, deleteCut, deleteJob, downloadAllUrl, fileUrl, previewUrl } from "../lib/api";
+import {
+  createJob,
+  deleteCut,
+  deleteJob,
+  downloadAllUrl,
+  fileUrl,
+  previewUrl,
+  retryJob,
+} from "../lib/api";
 import { cutDuration } from "../../shared/time";
 import { uuid } from "../lib/uuid";
 import type { CutResult, VideoProject } from "../../shared/types";
@@ -23,8 +31,23 @@ export function ResultsView() {
   const [confirmPos, setConfirmPos] = useState<number | null>(null);
   const [removing, setRemoving] = useState(false);
   const [reprocessing, setReprocessing] = useState(false);
+  const [retrying, setRetrying] = useState(false);
   const job = project?.job;
   if (!project || !job) return null;
+
+  // Resume: re-run only the cuts that didn't finish, keeping the good ones.
+  async function retry() {
+    if (!project || !job || retrying) return;
+    setRetrying(true);
+    try {
+      updateJob(project.id, await retryJob(job.id));
+      goTo("progress");
+    } catch (err) {
+      alert((err as Error).message);
+    } finally {
+      setRetrying(false);
+    }
+  }
 
   // Re-run the exact same job (same cuts + mode) without going through the editor.
   async function reprocess() {
@@ -63,6 +86,7 @@ export function ResultsView() {
 
   const done = job.cuts.filter((c) => c.status === "done");
   const failed = job.cuts.filter((c) => c.status === "error");
+  const remaining = job.cuts.length - done.length;
   const jobFailed = job.phase === "failed";
   const format = job.project.format ?? "mp4";
 
@@ -173,13 +197,26 @@ export function ResultsView() {
             <button type="button" className="btn btn--ghost" onClick={() => goTo("editor")}>
               Editar
             </button>
+            {remaining > 0 && (
+              <button
+                type="button"
+                className="btn btn--secondary"
+                disabled={retrying || reprocessing}
+                onClick={retry}
+                title="Gera só os cortes que faltaram, mantendo os que já deram certo"
+              >
+                {retrying
+                  ? "Retomando…"
+                  : `Retomar (${remaining} corte${remaining === 1 ? "" : "s"})`}
+              </button>
+            )}
             <button
               type="button"
-              className="btn btn--secondary"
-              disabled={reprocessing}
+              className="btn btn--ghost"
+              disabled={reprocessing || retrying}
               onClick={reprocess}
             >
-              {reprocessing ? "Iniciando…" : "Processar novamente"}
+              {reprocessing ? "Iniciando…" : remaining > 0 ? "Refazer tudo" : "Processar novamente"}
             </button>
             {done.length > 0 && (
               <a className="btn btn--success" href={downloadAllUrl(job.id)}>

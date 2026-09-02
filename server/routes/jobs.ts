@@ -171,6 +171,37 @@ jobsRouter.post("/:id/cancel", (req, res) => {
   res.json(updated);
 });
 
+// Resume a finished/failed job: re-run only the cuts that aren't done yet
+// (errored, cancelled, still pending). The successful clips are kept on disk and
+// skipped by the pipeline.
+jobsRouter.post("/:id/retry", (req, res) => {
+  const job = getJob(req.params.id);
+  if (!job) return res.status(404).json({ error: "Job não encontrado" });
+  if (job.phase === "downloading" || job.phase === "cutting") {
+    return res.status(409).json({ error: "O job ainda está processando" });
+  }
+  if (!job.cuts.some((c) => c.status !== "done")) {
+    return res.status(409).json({ error: "Todos os cortes já estão prontos" });
+  }
+
+  const updated =
+    patchJob(job.id, (j) => {
+      j.phase = "downloading";
+      j.downloadPercent = 0;
+      delete j.error;
+      for (const c of j.cuts) {
+        if (c.status !== "done") {
+          c.status = "pending";
+          c.percent = 0;
+          delete c.error;
+        }
+      }
+    }) ?? job;
+  emit(job.id, { type: "snapshot", job: updated });
+  void runPipeline(updated);
+  res.json(updated);
+});
+
 // Remove a single cut from a finished job: delete its file and drop it from the
 // manifest. Other cuts keep their positions (used by the preview/download URLs).
 jobsRouter.delete("/:id/cuts/:position", (req, res) => {

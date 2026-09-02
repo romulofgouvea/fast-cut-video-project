@@ -60,3 +60,10 @@ describe("GET /api/jobs", () => {
     expect(Array.isArray(res.body)).toBe(true);
   });
 });
+
+describe("POST /api/jobs/:id/retry", () => {
+  it("404s for an unknown job", async () => {
+    const res = await request(app).post("/api/jobs/nope/retry");
+    expect(res.status).toBe(404);
+  });
+});

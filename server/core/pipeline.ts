@@ -6,7 +6,7 @@ import { cachedSourcePath, ensureSource } from "./sourceCache";
 import { buildCutArgs, runCut, type WatermarkArgs } from "./ffmpeg";
 import { outputPath, pickCutFileName } from "./naming";
 import { dateStamp } from "../../shared/filename";
-import { emit, patchJob } from "./jobStore";
+import { emit, getJob, patchJob } from "./jobStore";
 import { CancelledError, endJobControl, startJobControl, whenAborted } from "./jobControl";
 
 /** Run the full pipeline for a job: download once, then generate every cut. */
@@ -69,20 +69,34 @@ export async function runPipeline(job: Job): Promise<void> {
       if (signal.aborted) throw new CancelledError();
       const cut = cuts[i];
       const position = i + 1;
+
+      // Resume mode: a cut already produced on an earlier run stays as-is, so a
+      // partial failure only re-cuts what's missing ("do que falhou pra frente").
+      const prior = getJob(jobId)?.cuts.find((c) => c.position === position);
+      if (
+        prior?.status === "done" &&
+        prior.fileName &&
+        fs.existsSync(outputPath(dir, prior.fileName))
+      ) {
+        reserved.add(prior.fileName);
+        continue;
+      }
+
       const startSec = parseTimecode(cut.start) ?? 0;
       const endSec = parseTimecode(cut.end) ?? 0;
       const durationSec = Math.max(0, endSec - startSec);
-      const fileName = pickCutFileName(
-        {
-          cutName: cut.name,
-          projectName: job.project.name,
-          title: job.project.title,
-          date,
-          ext,
-        },
-        dir,
-        reserved,
-      );
+      // Re-runs overwrite the same file; first runs pick a fresh collision-free name.
+      let fileName: string;
+      if (prior?.fileName) {
+        fileName = prior.fileName;
+        reserved.add(fileName);
+      } else {
+        fileName = pickCutFileName(
+          { cutName: cut.name, projectName: job.project.name, title: job.project.title, date, ext },
+          dir,
+          reserved,
+        );
+      }
 
       const report = (status: CutStatus, percent: number, error?: string) =>
         patchJob(

@@ -110,6 +110,12 @@ export async function cancelJob(jobId: string): Promise<Job> {
   return (await jsonOrThrow(res)) as Job;
 }
 
+/** Re-run only the cuts that aren't done yet, keeping the ones that succeeded. */
+export async function retryJob(jobId: string): Promise<Job> {
+  const res = await fetch(`/api/jobs/${jobId}/retry`, { method: "POST" });
+  return (await jsonOrThrow(res)) as Job;
+}
+
 export async function getJob(jobId: string): Promise<Job> {
   const res = await fetch(`/api/jobs/${jobId}`);
   return (await jsonOrThrow(res)) as Job;
