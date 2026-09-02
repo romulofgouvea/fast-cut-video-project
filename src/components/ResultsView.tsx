@@ -3,6 +3,7 @@ import { useStore, useActiveProject } from "../store";
 import { ClipVideo } from "./ClipVideo";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { createJob, deleteCut, deleteJob, downloadAllUrl, fileUrl, previewUrl } from "../lib/api";
+import { formatTimecode, parseTimecode } from "../../shared/time";
 import { uuid } from "../lib/uuid";
 import type { CutResult, VideoProject } from "../../shared/types";
 
@@ -85,6 +86,12 @@ export function ResultsView() {
           {job.cuts.map((c) => {
             const src = job.project.cuts.find((x) => x.id === c.id);
             const label = src?.name?.trim() || `Corte ${c.position}`;
+            const startSec = src ? parseTimecode(src.start) : null;
+            const endSec = src ? parseTimecode(src.end) : null;
+            const cutLength =
+              startSec !== null && endSec !== null && endSec > startSec
+                ? formatTimecode(endSec - startSec)
+                : null;
             return (
               <li key={c.id} className={`result-card is-${c.status}`}>
                 {c.status === "done" ? (
@@ -125,6 +132,7 @@ export function ResultsView() {
                   {src && (
                     <span className="result-card__range">
                       {src.start} → {src.end}
+                      {cutLength && <span className="result-card__dur">{cutLength}</span>}
                     </span>
                   )}
                   <span className="result-card__file">{c.fileName || "—"}</span>

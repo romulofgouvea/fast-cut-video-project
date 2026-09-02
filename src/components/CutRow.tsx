@@ -1,5 +1,5 @@
 import { useStore, useActiveProject } from "../store";
-import { parseTimecode, validateCut } from "../../shared/time";
+import { formatTimecode, parseTimecode, validateCut } from "../../shared/time";
 import type { VideoCut } from "../../shared/types";
 
 type Props = { cut: VideoCut; index: number };
@@ -75,6 +75,9 @@ export function CutRow({ cut, index }: Props) {
       {!result.ok && <p className="hint hint--error">{result.reason}</p>}
 
       <div className="cut-row__actions">
+        <span className="cut-row__dur" title="Duração do corte">
+          {result.ok ? formatTimecode(result.endSec - result.startSec) : "--:--:--"}
+        </span>
         <button
           type="button"
           className="btn btn--ghost cut-row__action"

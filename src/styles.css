@@ -1077,10 +1077,23 @@ input:focus {
 
 .cut-row__actions {
   display: flex;
+  align-items: center;
   gap: 6px;
   justify-content: flex-end;
   padding-top: 10px;
   border-top: 1px solid var(--border);
+}
+
+.cut-row__dur {
+  margin-right: auto;
+  padding: 2px 7px;
+  border-radius: var(--radius-xs);
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .cut-row__action {
@@ -1797,6 +1810,16 @@ video::-webkit-media-controls-volume-slider {
   font-size: 13px;
   color: var(--muted-foreground);
   font-variant-numeric: tabular-nums;
+}
+
+.result-card__dur {
+  margin-left: 8px;
+  padding: 1px 6px;
+  border-radius: var(--radius-xs);
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .result-card__file {
