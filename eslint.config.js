@@ -6,7 +6,7 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import prettier from "eslint-config-prettier/flat";
 
 export default tseslint.config(
-  { ignores: ["dist/", "data/", "bin/", "node_modules/", "src-tauri/"] },
+  { ignores: ["dist/", "data/", "bin/", "node_modules/", "src-tauri/", "coverage/"] },
 
   js.configs.recommended,
   ...tseslint.configs.recommended,
@@ -36,20 +36,27 @@ export default tseslint.config(
 
   // Backend + scripts: Node globals.
   {
-    files: ["server/**/*.ts", "shared/**/*.ts", "scripts/**/*.mjs", "*.config.{ts,js}", "e2e/**"],
+    files: [
+      "server/**/*.ts",
+      "shared/**/*.ts",
+      "scripts/**/*.mjs",
+      "*.config.{ts,js}",
+      "tests/e2e/**",
+    ],
     languageOptions: { globals: globals.node },
   },
 
   // Playwright specs + screenshot scripts also run browser-context callbacks.
   {
-    files: ["e2e/**/*.spec.ts", "scripts/shots.mjs"],
+    files: ["tests/e2e/**/*.spec.ts", "scripts/shots.mjs"],
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
 
-  // Tests: Node + it/describe/expect come from vitest imports, so nothing extra.
+  // Tests: Node + jsdom (some suites opt into the browser env). it/describe/expect
+  // come from explicit vitest imports.
   {
-    files: ["**/*.test.{ts,tsx}"],
-    languageOptions: { globals: { ...globals.node } },
+    files: ["tests/**/*.{ts,tsx}"],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
 
   prettier,

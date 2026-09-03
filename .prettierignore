@@ -11,3 +11,5 @@ src-tauri/public/
 src-tauri/binaries/
 src-tauri/icons/
 test-upload.mjs
+
+coverage/

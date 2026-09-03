@@ -2,7 +2,12 @@
   "compilerOptions": {
     "target": "ES2022",
     "baseUrl": ".",
-    "paths": { "@/*": ["./src/*"] },
+    "paths": {
+      "@/*": ["./src/*"],
+      "@server/*": ["./server/*"],
+      "@shared/*": ["./shared/*"],
+      "@tests/*": ["./tests/*"]
+    },
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "bundler",
@@ -19,5 +24,13 @@
     "verbatimModuleSyntax": false,
     "noEmit": true
   },
-  "include": ["src", "server", "shared", "vite.config.ts", "tsup.config.ts"]
+  "include": [
+    "src",
+    "server",
+    "shared",
+    "tests",
+    "vite.config.ts",
+    "vitest.config.ts",
+    "tsup.config.ts"
+  ]
 }

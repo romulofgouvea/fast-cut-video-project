@@ -35,9 +35,18 @@ npm start          # roda o build: node dist/server/index.js  (porta 5000 por pa
 (`.github/workflows/ci.yml`) roda `npm run check` + `npm run build` (job `check`) e os
 testes E2E do Playwright (job `e2e`) em todo Pull Request e push na `master`.
 
-Os testes E2E (`e2e/*.spec.ts`) sobem o build de verdade via `e2e/serve.mjs` (num
-`DATA_DIR` limpo) e usam `e2e/fixtures/sample.mp4` como fonte — cobrem o pipeline
-inteiro sem rede. Rodam com `npx playwright install chromium` na 1ª vez.
+Todo o código de teste vive em **`tests/`** (espelha a árvore do projeto:
+`tests/server/…`, `tests/shared/…`, `tests/src/…`, `tests/e2e/…`). Os testes
+importam a aplicação pelos aliases `@/`, `@server/`, `@shared/` (definidos em
+`vitest.config.ts` e `tsconfig.json`).
+
+Os testes E2E (`tests/e2e/*.spec.ts`) sobem o build de verdade via
+`tests/e2e/serve.mjs` (num `DATA_DIR` limpo) e usam `tests/e2e/fixtures/sample.mp4`
+como fonte — cobrem o pipeline inteiro sem rede. Rodam com
+`npx playwright install chromium` na 1ª vez.
+
+Cobertura: `npm run test:coverage` (relatório em `coverage/`). Só a lógica não-React
+é coberta por unit tests; os componentes ficam a cargo do E2E.
 
 Em dev a API usa a porta **5000** (o front Vite fica na 3000 e faz proxy `/api`).
 Em produção (Docker) o container roda tudo na **3000** — a imagem já traz `PORT=3000`.
