@@ -193,7 +193,8 @@ h3 {
   width: 28px;
   height: 28px;
   border-radius: var(--radius-sm);
-  background: var(--primary);
+  /* Brand teal — matches the favicon and the desktop app icon. */
+  background: var(--ok);
   color: #fff;
 }
 
