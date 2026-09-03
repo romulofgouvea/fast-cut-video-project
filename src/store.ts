@@ -185,6 +185,19 @@ const makeMontageProject = (name?: string): MontageProject => ({
   compilation: { percent: 0 },
 });
 
+/**
+ * A montage has no title of its own. Prefer the name the user gave it; otherwise,
+ * when every clip comes from the same source, borrow that source's name so the
+ * generated file isn't just the generic "montagem". Returns undefined when there
+ * is nothing better than the fallback.
+ */
+export function montageBaseName(m: Pick<MontageProject, "name" | "items">): string | undefined {
+  const explicit = m.name?.trim();
+  if (explicit) return explicit;
+  const subs = new Set(m.items.map((it) => it.sub?.trim()).filter((s): s is string => Boolean(s)));
+  return subs.size === 1 ? [...subs][0] : undefined;
+}
+
 /** Top-level route. The montage flow's token is "montage" (label "Editor" in the UI). */
 export type AppRoute = "home" | "projects" | "montage";
 

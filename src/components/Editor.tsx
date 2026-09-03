@@ -48,13 +48,18 @@ export function Editor() {
     if (!sourceUrl || hasJob) return;
     let alive = true;
     let timer = 0;
+    let sawDownloading = false;
     if (wantSource) void prefetchSource(sourceUrl);
     const tick = async () => {
       const s = await prefetchStatus(sourceUrl);
       if (!alive) return;
       setDl(s);
-      // Poll on while it downloads; also while idle if we're expecting it to start.
-      const keepGoing = s.state === "downloading" || (wantSource && s.state === "idle");
+      if (s.state === "downloading") sawDownloading = true;
+      // Keep polling until a terminal state so the preview flips to the scrubbable
+      // player the moment the download finishes. Once a download has been seen,
+      // a transient network blip (reads back as "idle") won't stop the polling.
+      const terminal = s.state === "ready" || s.state === "error";
+      const keepGoing = !terminal && (s.state === "downloading" || sawDownloading || wantSource);
       if (keepGoing) timer = window.setTimeout(tick, 1500);
     };
     timer = window.setTimeout(tick, 300);

@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { useStore } from "../store";
+import { useStore, montageBaseName } from "../store";
 import type { MontageProject } from "../store";
 import { compilationDownloadUrl } from "../lib/api";
+import { bundleName, dateStamp } from "../../shared/filename";
 import { ConfirmDialog } from "./ConfirmDialog";
 
 const fmtDate = (iso: string) => {
@@ -43,6 +44,11 @@ export function MontageGallery() {
           {montageProjects.map((m) => {
             const badge = statusBadge(m);
             const name = m.name?.trim() || "Montagem sem nome";
+            const downloadName = bundleName(
+              montageBaseName(m) || "montagem",
+              dateStamp(new Date(m.createdAt)),
+              "mp4",
+            );
             return (
               <div
                 key={m.id}
@@ -65,7 +71,8 @@ export function MontageGallery() {
                   {m.compilation.phase === "done" && m.compilation.id && (
                     <a
                       className="gallery-card__link"
-                      href={compilationDownloadUrl(m.compilation.id)}
+                      href={compilationDownloadUrl(m.compilation.id, downloadName)}
+                      download={downloadName}
                       onClick={(e) => e.stopPropagation()}
                     >
                       Baixar vídeo

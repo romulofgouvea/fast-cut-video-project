@@ -23,6 +23,12 @@ export function VideoPreview({ localReady = false }: { localReady?: boolean }) {
   const source = detectSource(project.sourceUrl);
   const vertical = Boolean(source.isVertical);
 
+  // A Rumble *watch* URL carries no embeddable id, but yt-dlp resolves one into
+  // `project.videoId` — use it so there's a scrubbable frame before the download.
+  if (source.provider === "rumble" && !source.embedUrl && project.videoId) {
+    source.embedUrl = `https://rumble.com/embed/${project.videoId}/`;
+  }
+
   if (source.provider === "youtube" && source.id) {
     return <YouTubePlayer videoId={source.id} sourceUrl={sourceUrl} vertical={vertical} />;
   }
@@ -59,8 +65,9 @@ function EmbedPreview({
   title?: string;
   vertical: boolean;
 }) {
-  // Twitch only plays when `parent` matches the page actually hosting the iframe,
-  // which we only know at runtime — the embed URL from detectSource leaves it off.
+  // Twitch (player.twitch.tv for VODs/channels, clips.twitch.tv for clips) only
+  // plays when `parent` matches the page actually hosting the iframe, which we
+  // only know at runtime — the embed URL from detectSource leaves it off.
   const src =
     source.embedUrl && source.provider === "twitch"
       ? `${source.embedUrl}&parent=${window.location.hostname}`
@@ -79,7 +86,10 @@ function EmbedPreview({
         ) : thumbnail ? (
           <img className="preview__thumb" src={thumbnail} alt={title || "Prévia do vídeo"} />
         ) : (
-          <div className="preview__thumb preview__thumb--empty">Sem prévia disponível</div>
+          <div className="preview__thumb preview__thumb--empty">
+            <span className="preview__spinner" aria-hidden="true" />
+            <span>Aguardando prévia…</span>
+          </div>
         )}
       </div>
       <p className="hint">

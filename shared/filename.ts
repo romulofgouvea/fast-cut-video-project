@@ -1,4 +1,4 @@
-/** Automatic output file naming: "<name>_<YYYY-MM-DD>.mp4". */
+/** Automatic output file naming: "<title>-<YYYY-MM-DD>.mp4". */
 
 const INVALID_CHARS_RE = /[\\/:*?"<>|]/g;
 
@@ -36,18 +36,32 @@ export function dateStamp(d: Date = new Date()): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-/** Output file name for a cut: "<name>_<YYYY-MM-DD>.<ext>" (defaults to mp4). */
+/** Output file name for a cut: "<title>-<YYYY-MM-DD>.<ext>" (defaults to mp4). */
 export function cutOutputName(
   base: string | undefined | null,
   dateStr: string,
   ext = "mp4",
 ): string {
-  return `${fileBase(base)}_${dateStr}.${ext}`;
+  return `${fileBase(base)}-${dateStr}.${ext}`;
 }
 
-/** Name for a bundled download: "<name>_<YYYY-MM-DD>.<ext>" (ext without dot). */
+/** Name for a bundled download: "<title>-<YYYY-MM-DD>.<ext>" (ext without dot). */
 export function bundleName(base: string | undefined | null, dateStr: string, ext: string): string {
-  return `${fileBase(base)}_${dateStr}.${ext}`;
+  return `${fileBase(base)}-${dateStr}.${ext}`;
+}
+
+/**
+ * Harden a client-proposed download name for use in a Content-Disposition header:
+ * drop any path, sanitize the stem, and keep `fallback`'s extension. Returns
+ * `fallback` untouched when the proposal has nothing usable in it.
+ */
+export function safeDownloadName(proposed: string | undefined | null, fallback: string): string {
+  if (!proposed) return fallback;
+  const base = proposed.replace(/^.*[\\/]/, ""); // drop any directory part
+  const stem = sanitizeTitle(base.replace(/\.[^.]+$/, ""));
+  if (!stem) return fallback;
+  const dot = fallback.lastIndexOf(".");
+  return dot === -1 ? stem : `${stem}${fallback.slice(dot)}`;
 }
 
 /**

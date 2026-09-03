@@ -827,11 +827,23 @@ input:focus {
 }
 
 .preview__thumb--empty {
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
   background: var(--surface);
   color: var(--muted-foreground);
   font-size: 14px;
+}
+
+.preview__spinner {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid color-mix(in srgb, var(--muted-foreground) 25%, transparent);
+  border-top-color: var(--muted-foreground);
+  animation: progress-spin 0.9s linear infinite;
 }
 
 .preview__scrub {
@@ -2486,20 +2498,30 @@ body.has-modal .preview__frame iframe {
 }
 
 .gallery-card__thumb {
+  position: relative;
   aspect-ratio: 16 / 9;
-  display: grid;
-  place-items: center;
+  overflow: hidden;
+  flex: none;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
 }
 
+/* Absolute fill so a portrait thumbnail can't stretch the card — it's cropped
+   to the 16:9 box instead (object-fit: cover). */
 .gallery-card__thumb img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .gallery-card__thumb-fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
   font-size: 2rem;
   opacity: 0.7;
 }

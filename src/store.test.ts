@@ -1,5 +1,12 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { useStore, toStored, fromStored, toStoredMontage, fromStoredMontage } from "./store";
+import {
+  useStore,
+  toStored,
+  fromStored,
+  toStoredMontage,
+  fromStoredMontage,
+  montageBaseName,
+} from "./store";
 import type { MontageItem } from "./store";
 
 const s = () => useStore.getState();
@@ -268,6 +275,27 @@ describe("montage projects", () => {
         .montageProjects.find((m) => m.name === "A")!
         .items.map((i) => i.key),
     ).toEqual(["upload:U"]);
+  });
+
+  it("montageBaseName prefers the user's name, then a shared source, then nothing", () => {
+    const item = (sub?: string): MontageItem => ({
+      key: `k${Math.random()}`,
+      label: "clip",
+      sub,
+      ref: { kind: "cut", jobId: "J", position: 1 },
+    });
+    // explicit name always wins
+    expect(montageBaseName({ name: "  My Montage ", items: [item("Vid A")] })).toBe("My Montage");
+    // no name, every clip from the same source -> that source
+    expect(
+      montageBaseName({ name: undefined, items: [item("Lofi Beats"), item("Lofi Beats")] }),
+    ).toBe("Lofi Beats");
+    // no name, clips from different sources -> undefined (caller falls back to "montagem")
+    expect(
+      montageBaseName({ name: undefined, items: [item("Vid A"), item("Vid B")] }),
+    ).toBeUndefined();
+    // no name, no subs -> undefined
+    expect(montageBaseName({ name: undefined, items: [item(), item()] })).toBeUndefined();
   });
 
   it("stored round-trip keeps id/name/items and compilationId -> compilation.id", () => {

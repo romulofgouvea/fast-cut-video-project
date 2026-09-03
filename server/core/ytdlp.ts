@@ -165,6 +165,11 @@ export async function download(
       "--remux-video",
       "mp4",
       "--no-playlist",
+      // Move the moov atom to the front of the mp4 so the in-editor <video>
+      // preview can show metadata / seek immediately instead of waiting for the
+      // whole (often large) file to arrive.
+      "--postprocessor-args",
+      "ffmpeg:-movflags +faststart",
       "--newline",
       "--progress-template",
       "download:%(progress._percent_str)s",

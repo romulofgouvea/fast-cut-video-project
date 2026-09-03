@@ -5,6 +5,7 @@ import {
   dateStamp,
   fileBase,
   resolveCollision,
+  safeDownloadName,
   sanitizeTitle,
 } from "./filename";
 
@@ -28,18 +29,34 @@ describe("dateStamp", () => {
 });
 
 describe("cutOutputName", () => {
-  it("is <base>_<date>.mp4", () => {
-    expect(cutOutputName("Cool Clip", "2026-08-05")).toBe("Cool-Clip_2026-08-05.mp4");
+  it("is <title>-<date>.mp4", () => {
+    expect(cutOutputName("Cool Clip", "2026-08-05")).toBe("Cool-Clip-2026-08-05.mp4");
   });
   it("falls back to 'video' without a base", () => {
     expect(fileBase(undefined)).toBe("video");
-    expect(cutOutputName(undefined, "2026-08-05")).toBe("video_2026-08-05.mp4");
+    expect(cutOutputName(undefined, "2026-08-05")).toBe("video-2026-08-05.mp4");
   });
 });
 
 describe("bundleName", () => {
   it("appends the date and the given extension", () => {
-    expect(bundleName("My Project", "2026-08-05", "zip")).toBe("My-Project_2026-08-05.zip");
+    expect(bundleName("My Project", "2026-08-05", "zip")).toBe("My-Project-2026-08-05.zip");
+  });
+});
+
+describe("safeDownloadName", () => {
+  const fallback = "montagem-2026-08-05.mp4";
+  it("keeps a clean proposal and swaps in the fallback extension", () => {
+    expect(safeDownloadName("LOFI 1h-2026-08-05.mp4", fallback)).toBe("LOFI-1h-2026-08-05.mp4");
+  });
+  it("strips path components and invalid chars (no traversal)", () => {
+    expect(safeDownloadName("../../etc/passwd", fallback)).toBe("passwd.mp4");
+    expect(safeDownloadName('a:b*c?"<>|.mp4', fallback)).toBe("abc.mp4");
+  });
+  it("falls back when the proposal is empty or unusable", () => {
+    expect(safeDownloadName(undefined, fallback)).toBe(fallback);
+    expect(safeDownloadName("", fallback)).toBe(fallback);
+    expect(safeDownloadName("///", fallback)).toBe(fallback);
   });
 });
 

@@ -143,7 +143,7 @@ export function detectSource(rawUrl: string): VideoSource {
   }
 
   if (/(^|\.)vimeo\.com$/.test(host)) {
-    const m = url.match(/vimeo\.com\/(?:video\/)?(\d+)(?:\/(\w+))?/);
+    const m = url.match(/vimeo\.com\/(?:video\/|channels\/[\w-]+\/)?(\d+)(?:\/(\w+))?/);
     const id = m?.[1];
     return {
       provider: "vimeo",
@@ -158,7 +158,9 @@ export function detectSource(rawUrl: string): VideoSource {
   if (/(^|\.)dailymotion\.com$/.test(host) || host === "dai.ly") {
     const id =
       url.match(/dailymotion\.com\/(?:embed\/)?video\/([A-Za-z0-9]+)/)?.[1] ??
-      url.match(/dai\.ly\/([A-Za-z0-9]+)/)?.[1];
+      url.match(/dai\.ly\/([A-Za-z0-9]+)/)?.[1] ??
+      // geo.dailymotion.com/player/<playerId>.html?video=<id>
+      url.match(/[?&]video=([A-Za-z0-9]+)/)?.[1];
     return {
       provider: "dailymotion",
       id,
@@ -267,7 +269,7 @@ export function detectSource(rawUrl: string): VideoSource {
   if (/(^|\.)giphy\.com$/.test(host)) {
     const id =
       url.match(/giphy\.com\/embed\/([A-Za-z0-9]+)/)?.[1] ??
-      url.match(/giphy\.com\/(?:gifs|clips|stickers)\/(?:.*-)?([A-Za-z0-9]+)/)?.[1] ??
+      url.match(/giphy\.com\/(?:gifs|clips|videos|stickers)\/(?:.*-)?([A-Za-z0-9]+)/)?.[1] ??
       url.match(/media\.giphy\.com\/media\/([A-Za-z0-9]+)/)?.[1];
     return {
       provider: "giphy",
@@ -278,7 +280,7 @@ export function detectSource(rawUrl: string): VideoSource {
   }
 
   if (/(^|\.)pinterest\.[a-z.]+$/.test(host) || host === "pin.it") {
-    const pin = url.match(/pinterest\.[a-z.]+\/pin\/(\d+)/)?.[1];
+    const pin = url.match(/pinterest\.[a-z.]+\/pin\/(?:[^/]+-)?(\d+)/)?.[1];
     return {
       provider: "pinterest",
       id: pin,
@@ -288,17 +290,34 @@ export function detectSource(rawUrl: string): VideoSource {
   }
 
   if (/(^|\.)twitch\.tv$/.test(host)) {
-    // Needs `&parent=<host>`, appended by the preview at render time.
-    const vod = url.match(/twitch\.tv\/videos\/(\d+)/)?.[1] ?? url.match(/[?&]video=v?(\d+)/)?.[1];
+    // Every Twitch embed needs `&parent=<host>` matching the page it runs on;
+    // that's unknown here, so the preview appends it at render time.
     const clip =
-      url.match(/clips\.twitch\.tv\/([A-Za-z0-9_-]+)/)?.[1] ??
-      url.match(/twitch\.tv\/\w+\/clip\/([A-Za-z0-9_-]+)/)?.[1];
-    const channel = !vod && !clip ? url.match(/twitch\.tv\/([A-Za-z0-9_]+)/)?.[1] : undefined;
-    const q = clip ? `clip=${clip}` : vod ? `video=${vod}` : channel ? `channel=${channel}` : "";
+      url.match(/[?&]clip=([A-Za-z0-9_-]+)/)?.[1] ??
+      url.match(/twitch\.tv\/(?:\w+\/)?clip\/([A-Za-z0-9_-]+)/)?.[1] ??
+      url.match(/clips\.twitch\.tv\/(?!embed\b)([A-Za-z0-9_-]+)/)?.[1];
+    const vod = !clip
+      ? // /videos/<id>, legacy /<channel>/v/<id>, and the ?video= player param
+        (url.match(/twitch\.tv\/(?:[A-Za-z0-9_]+\/)?(?:v|videos?)\/(\d+)/i)?.[1] ??
+        url.match(/[?&]video=v?(\d+)/)?.[1])
+      : undefined;
+    const channel =
+      !vod && !clip
+        ? (url.match(/[?&]channel=([A-Za-z0-9_]+)/)?.[1] ??
+          url.match(/twitch\.tv\/([A-Za-z0-9_]+)/)?.[1])
+        : undefined;
+    // Clips embed from clips.twitch.tv; VODs and live channels from player.twitch.tv.
+    const embedUrl = clip
+      ? `https://clips.twitch.tv/embed?clip=${clip}&autoplay=false`
+      : vod
+        ? `https://player.twitch.tv/?video=${vod}&autoplay=false`
+        : channel
+          ? `https://player.twitch.tv/?channel=${channel}&autoplay=false`
+          : undefined;
     return {
       provider: "twitch",
       id: clip ?? vod ?? channel,
-      embedUrl: q ? `https://player.twitch.tv/?${q}&autoplay=false` : undefined,
+      embedUrl,
       hasBridge: false,
     };
   }

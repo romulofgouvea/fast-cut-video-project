@@ -10,8 +10,8 @@ import { PlayerControls, type PlayerAdapter } from "./PlayerControls";
  * clips (Reels, TikTok) are shown upright and centered with black side bars
  * instead of being letterboxed into a 16:9 box.
  *
- * Autoplay only works muted (browser policy), so we start muted; the sound toggle
- * in the transport bar (and pressing Play) turns it back on.
+ * It loads paused and *unmuted* (matching the YouTube player) so the first Play
+ * always has sound — an unmuted autoplay would be blocked by the browser anyway.
  */
 export function LocalFilePlayer({
   src,
@@ -29,7 +29,7 @@ export function LocalFilePlayer({
   const [duration, setDuration] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [ratio, setRatio] = useState<number | null>(null);
-  const [muted, setMuted] = useState(true);
+  const [muted, setMuted] = useState(false);
 
   const adapter = useMemo<PlayerAdapter>(
     () => ({
@@ -73,12 +73,14 @@ export function LocalFilePlayer({
           src={src}
           poster={poster}
           controls
-          autoPlay
-          muted
           playsInline
           preload="metadata"
           onLoadedMetadata={(e) => {
             const v = e.currentTarget;
+            // Browsers persist the last-used volume/mute per origin — force sound
+            // back on so the source preview always plays with audio.
+            v.muted = false;
+            if (v.volume === 0) v.volume = 1;
             setDuration(v.duration || 0);
             if (v.videoWidth && v.videoHeight) setRatio(v.videoWidth / v.videoHeight);
             setReady(true);

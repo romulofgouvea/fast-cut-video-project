@@ -12,6 +12,7 @@ import {
   retryJob,
 } from "../lib/api";
 import { cutDuration } from "../../shared/time";
+import { bundleName, dateStamp } from "../../shared/filename";
 import { uuid } from "../lib/uuid";
 import type { CutResult, VideoProject } from "../../shared/types";
 
@@ -159,7 +160,11 @@ export function ResultsView() {
 
                   <div className="result-card__actions">
                     {c.status === "done" && (
-                      <a className="btn btn--secondary" href={fileUrl(job.id, c.position)}>
+                      <a
+                        className="btn btn--secondary"
+                        href={fileUrl(job.id, c.position)}
+                        download={c.fileName || undefined}
+                      >
                         Baixar
                       </a>
                     )}
@@ -219,7 +224,15 @@ export function ResultsView() {
               {reprocessing ? "Iniciando…" : remaining > 0 ? "Refazer tudo" : "Processar novamente"}
             </button>
             {done.length > 0 && (
-              <a className="btn btn--success" href={downloadAllUrl(job.id)}>
+              <a
+                className="btn btn--success"
+                href={downloadAllUrl(job.id)}
+                download={bundleName(
+                  project.name || project.title,
+                  dateStamp(new Date(job.createdAt)),
+                  "zip",
+                )}
+              >
                 Baixar tudo (.zip)
               </a>
             )}

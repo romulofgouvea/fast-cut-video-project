@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useStore, useActiveMontage } from "../store";
+import { useStore, useActiveMontage, montageBaseName } from "../store";
 import { ClipVideo } from "./ClipVideo";
 import { MontagePreview } from "./MontagePreview";
 import {
@@ -12,6 +12,7 @@ import {
 } from "../lib/api";
 import type { MontageItem } from "../store";
 import type { PoolClip } from "../../shared/types";
+import { bundleName, dateStamp } from "../../shared/filename";
 
 const itemPreview = (m: MontageItem) =>
   m.ref.kind === "cut" ? previewUrl(m.ref.jobId, m.ref.position) : uploadPreviewUrl(m.ref.uploadId);
@@ -93,6 +94,11 @@ export function CompilationView() {
 
   if (!mp) return null;
   const compilation = mp.compilation;
+  const downloadName = bundleName(
+    montageBaseName(mp) || "montagem",
+    dateStamp(new Date(mp.createdAt)),
+    "mp4",
+  );
 
   async function onUpload(file: File | undefined) {
     if (!file) return;
@@ -120,7 +126,7 @@ export function CompilationView() {
     setCompilation({ id: undefined, phase: undefined, percent: 0, error: undefined });
     try {
       const { id } = await createCompilation({
-        name: mp.name?.trim() || undefined,
+        name: montageBaseName(mp) || undefined,
         items: montage.map((m) => m.ref),
       });
       setCompilation({ id, phase: "processing", percent: 0 });
@@ -173,7 +179,11 @@ export function CompilationView() {
 
             <div className="montage__go-row">
               {done && compilation.id && (
-                <a className="btn btn--secondary" href={compilationDownloadUrl(compilation.id)}>
+                <a
+                  className="btn btn--secondary"
+                  href={compilationDownloadUrl(compilation.id, downloadName)}
+                  download={downloadName}
+                >
                   Baixar vídeo
                 </a>
               )}

@@ -151,6 +151,75 @@ describe("detectSource", () => {
     expect(s.embedUrl).toBe("https://player.twitch.tv/?video=992175865&autoplay=false");
   });
 
+  it("Twitch: a VOD watch link → player.twitch.tv video embed", () => {
+    const s = detectSource("https://www.twitch.tv/videos/992175865");
+    expect(s.provider).toBe("twitch");
+    expect(s.id).toBe("992175865");
+    expect(s.embedUrl).toBe("https://player.twitch.tv/?video=992175865&autoplay=false");
+  });
+
+  it("Twitch: a clip link → clips.twitch.tv embed (not the player)", () => {
+    const slug = "AwkwardHelplessSalamanderSwiftRage";
+    for (const url of [
+      `https://clips.twitch.tv/${slug}`,
+      `https://www.twitch.tv/somestreamer/clip/${slug}`,
+      `https://m.twitch.tv/clip/${slug}`,
+    ]) {
+      const s = detectSource(url);
+      expect(s.provider).toBe("twitch");
+      expect(s.id).toBe(slug);
+      expect(s.embedUrl).toBe(`https://clips.twitch.tv/embed?clip=${slug}&autoplay=false`);
+    }
+  });
+
+  it("Twitch: a pasted clip iframe keeps the slug, not 'embed'", () => {
+    const s = detectSource(
+      '<iframe src="https://clips.twitch.tv/embed?clip=GoodClipSlug123&parent=iframely.com"></iframe>',
+    );
+    expect(s.provider).toBe("twitch");
+    expect(s.id).toBe("GoodClipSlug123");
+    expect(s.embedUrl).toBe("https://clips.twitch.tv/embed?clip=GoodClipSlug123&autoplay=false");
+  });
+
+  it("Twitch: legacy /<channel>/v/<id> VOD link", () => {
+    const s = detectSource("https://www.twitch.tv/somestreamer/v/992175865");
+    expect(s.provider).toBe("twitch");
+    expect(s.id).toBe("992175865");
+    expect(s.embedUrl).toBe("https://player.twitch.tv/?video=992175865&autoplay=false");
+  });
+
+  it("Twitch: a plain channel link → live player embed", () => {
+    const s = detectSource("https://www.twitch.tv/somestreamer");
+    expect(s.provider).toBe("twitch");
+    expect(s.id).toBe("somestreamer");
+    expect(s.embedUrl).toBe("https://player.twitch.tv/?channel=somestreamer&autoplay=false");
+  });
+
+  it("Vimeo: a channels/<name>/<id> link", () => {
+    const s = detectSource("https://vimeo.com/channels/staffpicks/351593873");
+    expect(s.provider).toBe("vimeo");
+    expect(s.id).toBe("351593873");
+    expect(s.embedUrl).toBe("https://player.vimeo.com/video/351593873");
+  });
+
+  it("Dailymotion: geo player ?video= param", () => {
+    expect(
+      detectSource("https://geo.dailymotion.com/player/xabc.html?video=x5yiamz").embedUrl,
+    ).toBe("https://www.dailymotion.com/embed/video/x5yiamz");
+  });
+
+  it("Giphy: a /videos/ clip link", () => {
+    expect(detectSource("https://giphy.com/videos/some-title-abc123XYZ").embedUrl).toBe(
+      "https://giphy.com/embed/abc123XYZ",
+    );
+  });
+
+  it("Pinterest: a slug-prefixed pin url", () => {
+    expect(detectSource("https://www.pinterest.com/pin/my-nice-recipe-1234567890/").embedUrl).toBe(
+      "https://assets.pinterest.com/ext/embed.html?id=1234567890",
+    );
+  });
+
   it("Pinterest: a pin embeds, a board doesn't", () => {
     expect(detectSource("https://www.pinterest.com/pin/1234567890/").embedUrl).toBe(
       "https://assets.pinterest.com/ext/embed.html?id=1234567890",

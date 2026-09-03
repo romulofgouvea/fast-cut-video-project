@@ -302,6 +302,8 @@ export function subscribeCompilation(
   };
 }
 
-export function compilationDownloadUrl(id: string): string {
-  return `/api/compilations/${id}/download`;
+export function compilationDownloadUrl(id: string, name?: string): string {
+  // The montage name lives only in the browser; pass it so the server can put it
+  // in Content-Disposition (which wins over the <a download> attribute).
+  return `/api/compilations/${id}/download${name ? `?name=${encodeURIComponent(name)}` : ""}`;
 }

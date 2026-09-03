@@ -3,14 +3,14 @@ import fs from "node:fs";
 import { Router } from "express";
 import { z } from "zod";
 import type { Compilation } from "../../shared/types";
-import { bundleName, dateStamp } from "../../shared/filename";
+import { bundleName, dateStamp, safeDownloadName } from "../../shared/filename";
 import {
   createCompilation,
   emitterFor,
   getCompilation,
   listCompilations,
 } from "../core/compilationStore";
-import { runCompilation } from "../core/compilationPipeline";
+import { compilationBaseName, runCompilation } from "../core/compilationPipeline";
 import { compilationFile } from "../core/paths";
 
 const itemSchema = z.union([
@@ -94,5 +94,9 @@ compilationsRouter.get("/:id/download", (req, res) => {
   if (!fs.existsSync(file)) {
     return res.status(404).json({ error: "Arquivo não encontrado" });
   }
-  res.download(file, bundleName(c.name || "montagem", dateStamp(new Date(c.createdAt)), "mp4"));
+  // The montage's name only exists in the browser, so trust `?name=` (hardened)
+  // when the client sends it; otherwise fall back to the source-project name.
+  const fallback = bundleName(compilationBaseName(c), dateStamp(new Date(c.createdAt)), "mp4");
+  const proposed = typeof req.query.name === "string" ? req.query.name : undefined;
+  res.download(file, safeDownloadName(proposed, fallback));
 });
