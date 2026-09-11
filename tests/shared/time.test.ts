@@ -47,4 +47,12 @@ describe("validateCut", () => {
     expect(validateCut("00:00:00", "00:10:00", 120).ok).toBe(false);
     expect(validateCut("00:00:00", "00:02:00", 120).ok).toBe(true);
   });
+  it("treats a 0 / NaN / infinite duration as unknown (no upper bound)", () => {
+    // yt-dlp returns no duration for some sources (X/Twitter, live) — a cut
+    // must not be rejected just because the length is unknown.
+    expect(validateCut("00:00:00", "00:00:06", 0).ok).toBe(true);
+    expect(validateCut("00:00:00", "00:00:06", -1).ok).toBe(true);
+    expect(validateCut("00:00:00", "00:00:06", Number.NaN).ok).toBe(true);
+    expect(validateCut("00:00:00", "00:00:06", Number.POSITIVE_INFINITY).ok).toBe(true);
+  });
 });

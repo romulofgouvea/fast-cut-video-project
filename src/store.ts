@@ -68,11 +68,15 @@ export type StoredProject = {
   jobId?: string;
 };
 
-/** A fresh cut spanning the whole video (falls back to 1 min when duration is unknown). */
+/**
+ * A fresh cut starting at 0. When the video is shorter than 1 minute, the end
+ * defaults to the video's own length (so it's valid immediately); otherwise —
+ * including when the duration is still unknown — it defaults to 1 minute.
+ */
 const emptyCut = (duration?: number): VideoCut => ({
   id: uuid(),
   start: "00:00:00",
-  end: duration && duration > 0 ? formatTimecode(duration) : "00:01:00",
+  end: duration && duration > 0 && duration < 60 ? formatTimecode(duration) : "00:01:00",
 });
 
 export const toStored = (p: Project): StoredProject => ({
@@ -252,6 +256,11 @@ type State = {
   openEditor: () => void;
   /** Kick off the slow yt-dlp metadata fetch for a project (title/duration/thumb). */
   loadVideoInfo: (projectId: string) => Promise<void>;
+  /**
+   * Record the real playback length the preview player discovered. Only fills a
+   * missing/zero duration — it never overrides a value yt-dlp already gave.
+   */
+  noteRealDuration: (seconds: number) => void;
   setCutMode: (mode: CutMode) => void;
   setFormat: (format: OutputFormat) => void;
   setWatermark: (watermark: Watermark | undefined) => void;
@@ -449,7 +458,10 @@ export const useStore = create<State>()(
             editById(projectId, (x) => ({
               ...x,
               title: info.title,
-              duration: info.duration,
+              // Some sources (X/Twitter, live) report no duration — keep it
+              // unset rather than 0 so cut validation treats it as unknown and
+              // the real length can be backfilled from the player.
+              duration: info.duration > 0 ? info.duration : x.duration,
               thumbnail: info.thumbnail,
               videoId: detectSource(x.sourceUrl).id ?? x.videoId ?? info.videoId ?? undefined,
               infoStatus: "ready",
@@ -463,6 +475,13 @@ export const useStore = create<State>()(
             }));
           }
         },
+
+        noteRealDuration: (seconds) =>
+          editActive((p) =>
+            !Number.isFinite(seconds) || seconds <= 0 || (p.duration && p.duration > 0)
+              ? p
+              : { ...p, duration: Math.round(seconds) },
+          ),
 
         setCutMode: (cutMode) => editActive((p) => ({ ...p, cutMode })),
 

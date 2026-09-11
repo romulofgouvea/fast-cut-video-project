@@ -31,7 +31,10 @@ export type CutValidation =
   { ok: true; startSec: number; endSec: number } | { ok: false; reason: string };
 
 /**
- * Validate a start/end pair. `durationSec` (when provided) bounds `end`.
+ * Validate a start/end pair. `durationSec` (when provided *and* a positive,
+ * finite number) bounds `end`. A `0` / negative / NaN duration means "unknown"
+ * — some sources (X/Twitter, live, a few embeds) come back from yt-dlp with no
+ * duration, and we must not reject every cut in that case.
  * Overlap between different cuts is allowed by design, so it is not checked here.
  */
 export function validateCut(start: string, end: string, durationSec?: number): CutValidation {
@@ -40,7 +43,8 @@ export function validateCut(start: string, end: string, durationSec?: number): C
   if (startSec === null) return { ok: false, reason: "Início inválido (use HH:MM:SS)" };
   if (endSec === null) return { ok: false, reason: "Fim inválido (use HH:MM:SS)" };
   if (endSec <= startSec) return { ok: false, reason: "O fim deve ser maior que o início" };
-  if (durationSec !== undefined && endSec > Math.ceil(durationSec)) {
+  const hasBound = durationSec !== undefined && Number.isFinite(durationSec) && durationSec > 0;
+  if (hasBound && endSec > Math.ceil(durationSec as number)) {
     return { ok: false, reason: "O fim ultrapassa a duração do vídeo" };
   }
   return { ok: true, startSec, endSec };

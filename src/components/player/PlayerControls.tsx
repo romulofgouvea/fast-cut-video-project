@@ -37,6 +37,7 @@ export function PlayerControls({
 
   const setSeekTo = useStore((s) => s.setSeekTo);
   const setPlayerBridge = useStore((s) => s.setPlayerBridge);
+  const noteRealDuration = useStore((s) => s.noteRealDuration);
   const markStart = useStore((s) => s.markStart);
   const markEndAndCreate = useStore((s) => s.markEndAndCreate);
   const clearPendingStart = useStore((s) => s.clearPendingStart);
@@ -75,6 +76,13 @@ export function PlayerControls({
       setPlayerBridge(undefined, false);
     };
   }, [ready, setSeekTo, setPlayerBridge]);
+
+  // Backfill the project's duration from the player once it knows the real
+  // length — covers sources yt-dlp returns without a duration (X/Twitter, …),
+  // so cut validation still has an upper bound instead of rejecting everything.
+  useEffect(() => {
+    if (ready && duration > 0) noteRealDuration(duration);
+  }, [ready, duration, noteRealDuration]);
 
   // Poll the position for the readout / scrub bar.
   useEffect(() => {

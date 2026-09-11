@@ -73,12 +73,20 @@ describe("cut ID rules (RF-01..RF-05) on the active project", () => {
 });
 
 describe("addCut default span", () => {
-  it("spans the whole video when the duration is known", () => {
+  it("spans the whole video when it's shorter than 1 minute", () => {
+    useStore.setState({
+      projects: s().projects.map((p) => (p.id === s().activeId ? { ...p, duration: 45 } : p)),
+    });
+    s().addCut();
+    expect(activeCuts()[0]).toMatchObject({ start: "00:00:00", end: "00:00:45" });
+  });
+
+  it("defaults to 1 min (not the whole video) once it's 1 minute or longer", () => {
     useStore.setState({
       projects: s().projects.map((p) => (p.id === s().activeId ? { ...p, duration: 754 } : p)),
     });
     s().addCut();
-    expect(activeCuts()[0]).toMatchObject({ start: "00:00:00", end: "00:12:34" });
+    expect(activeCuts()[0]).toMatchObject({ start: "00:00:00", end: "00:01:00" });
   });
 
   it("falls back to 1 min when the duration is unknown", () => {

@@ -113,6 +113,30 @@ describe("loadVideoInfo", () => {
     await s().loadVideoInfo(active().id); // empty URL
     expect(fetchVideoInfo).not.toHaveBeenCalled();
   });
+
+  it("keeps duration unset when the source reports 0 (X/Twitter, live)", async () => {
+    s().setUrl("https://x.com/i/status/123");
+    fetchVideoInfo.mockResolvedValue({ title: "Post", duration: 0, thumbnail: "t.jpg" });
+    await s().loadVideoInfo(active().id);
+    expect(active().duration).toBeUndefined();
+    expect(active().infoStatus).toBe("ready");
+  });
+});
+
+describe("noteRealDuration", () => {
+  it("backfills a missing duration from the player", () => {
+    s().noteRealDuration(13.4);
+    expect(active().duration).toBe(13);
+  });
+
+  it("never overrides a duration yt-dlp already gave, and ignores junk values", () => {
+    s().noteRealDuration(120);
+    s().noteRealDuration(999);
+    expect(active().duration).toBe(120);
+    s().noteRealDuration(0);
+    s().noteRealDuration(Number.NaN);
+    expect(active().duration).toBe(120);
+  });
 });
 
 describe("jobs", () => {
