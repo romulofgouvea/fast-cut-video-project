@@ -4,7 +4,7 @@ services:
     image: fast-cut-video
     container_name: fast-cut-video
     ports:
-      - "3000:3000"
+      - "3001:3000"
     environment:
       DATA_DIR: /data
       PORT: "3000"
